@@ -1,0 +1,1254 @@
+<html>
+  <head>
+    <title>Projects: ASOIAF Motifs</title>
+  </head>
+  <body>
+    <h1>ASOIAF Motifs</h1>
+    <p>
+      <a href="https://github.com/deniseli1231/ASOIAFMotifs">Link to code</a>
+    </p>
+    <p><i>
+      This page contains spoilers for all the books in <b>A Song of Ice and
+      Fire</b>, by George R. R. Martin. Do not continue unless you have
+      finished reading the series, or if you do not plan on ever reading
+      the series (which would be the wrong choice).
+    </i></p><br>
+    <p>
+      The purpose of this project is find textual motifs in ASOIAF by analyzing
+      the variations in word frequencies and bigram frequencies for each unique
+      point of view. Simple word frequencies will be used to find the likely
+      starts of motifs, and the bigrams following from those given starting
+      points. We will rank both word and bigram frequencies in each POV within
+      each book by:
+    </p>
+    <p><center>
+      (# occurrences in X POV chapters) / (# occurrences in all chapters)
+    </center></p>
+    <p>
+      Note that for testing purposes, we would expect "Where do whores go" to be
+      returned as a motif in Tyrion's chapters.
+    </p>
+    <p>
+      This page is my slightly edited stream of consciousness while working
+      towards this goal.
+    </p>
+    <p>
+      First, for the sake of making processing easier, we need to break down the
+      complete texts into separate files by POV, instead of by book. We also
+      want to remove the question marks, since those would confuse the bigram
+      finder (" "SomeWord " would be considered different from " SomeWord" ",
+      as well as every other variation of no quotes, quotes on one side, or even
+      quotes on both sides of a word, which is not the desired behavior.). We
+      also need to make all the text the same case (lowercase, here), so the
+      same phrase located at the beginning and the middle of a sentence will be
+      considered keys to the same count. Finally we need to clean up the white
+      space and remove all the unnecessary newlines, double spaces, etc. Here's
+      a sample of the cleaned text, from Arya's chapters in
+      <i>A Game of Thrones</i>:
+    </p>
+    <div style="margin-left:50px;margin-right:50px;"><p><i>
+      who are you? arya asked. i am your dancing master. he tossed her one of
+      the wooden blades. she grabbed for it, missed, and heard it clatter to the
+      floor. tomorrow you will catch it. now pick it up. it was not just a
+      stick, but a true wooden sword complete with grip and guard and pommel.
+      arya picked it up and clutched it nervously with both hands, holding it
+      out in front of her.
+    </i></p></div>
+    <p>
+      The resulting files from this process can be accessed on github under the
+      povs/ directory (see the link to code at the top of this page).
+    </p>
+    <p>
+      Now, with the text all cleaned and sorted, we need to count the number
+      of times each word occurs in each POV. For each of these, I first cleaned
+      the text further to remove punctuation using the 
+      <a href="https://docs.python.org/2/library/re.html">re</a> module. I used
+      the Counter object in the
+      <a href="https://docs.python.org/2/library/collections.html">
+	collections</a> module to get the actual word frequencies on the text
+      split on spaces. I kept a sum of the counts in each POV per book, the
+      total number of occurrences for each word in each book. This per book
+      count was stored using the
+      <a href="https://docs.python.org/2/library/pickle.html">pickle</a> module.
+      Next, I found the POV to book count ratios for each POV, per the formula
+      given above. These, I similarly stored using pickle. The first couple
+      results for each POV here tend to be, quite predictably, the names of the
+      narrator's companions which are either unknown or irrelevant to all the
+      other POVs. For example, Bran's top 4 results in <i>A Storm of Swords</i>,
+      all used exclusively by him (per the ratio being 1.0), are:
+    </p>
+    <div style="margin-left:50px;margin-right:50px;"><p><i>
+      'osha': 1.0, 'frog': 1.0, "hodor's": 1.0, 'meera': 1.0
+    </i></p></div>
+    <p>
+      (As an aside, it's pretty entertaining looking at all the variations of
+      HOOODOOOOOR throughout the text. It might be interesting to graph the
+      correlation between frequency_of_hodors*average_hodor_length and some
+      sentiment analysis for Bran's chapters over time.)
+    </p>
+    <p>
+      Now, moving further down the list we see some more interesting results:
+    </p>
+    <div style="margin-left:50px;margin-right:50px;"><p><i>
+      'summer': 0.6024096385542169, 'stories': 0.5357142857142857,
+      'causeway': 0.5333333333333333, 'lake': 0.5319148936170213,
+      'story': 0.5217391304347826, 'net': 0.5172413793103449, 'embers': 0.5,
+      'rat': 0.5, 'deer': 0.5, 'moonlight': 0.47368421052631576,
+      'stableboy': 0.46153846153846156, 'crypts': 0.45454545454545453,
+      'footsteps': 0.4444444444444444
+    </i></p></div>
+    <p>
+      It appears that between 0.25 and 0.8, we see a lot of environmental
+      descriptors and imagery. While this is not immediately helpful for our
+      motif finding goal, it's definitely worth taking another look at, perhaps
+      in another project. There is also evidence of a problem with our method
+      here. By making all the characters lowercase, we have unintentionally
+      combined the counts for 'summer' the season and 'Summer' the direwolf.
+      This would be a difficult problem to solve, however, since at the start
+      of a sentence, there would be no distinction between the two at all.
+      Given the small scale of this project, I'll just leave this as a 'won't
+      fix' known issue which we should keep in mind in our analysis, but really
+      isn't a big deal in the grand scheme of things.
+    </p>
+    <p>
+      The next step would be to calculate the bigram frequencies. I considered
+      using nltk's BigramCollocationFinder, but that wouldn't give me the counts
+      or the specific format I want the data to be in, so I decided to just do
+      this part by hand. I modeled a simple Bayesian network using a dictionary
+      where the top level keys are the first words in the bigrams, the second
+      level keys are the following words in the bigrams, and the value each
+      secondary key points to is the fraction of times the given secondary word
+      followed the given first word when the first word appeared, or:
+    </p>
+    <p><center>
+      dict['azor']['ahai'] = (# times 'azor ahai' occurs) / (# of times 'azor'
+      occurs)
+    </center></p>
+    <p>
+      The challenge here is determining whether punctuation should impact the
+      "motifiness" of a phrase containing a specific series of bigrams. For the
+      sake of this project, I decided to make a judgement call and say bigrams
+      where the first word ends in a period, i.e. this bigram crosses the end
+      of a sentence, do not count. Likewise, bigrams where the first word ends
+      in an exclamation point, question mark, etc., will not be counted.
+      However, commas will be allowed and simply ignored. That is to say,
+      occurrences of "x, y" will be counted toward the same total as "x y". I
+      chose to allow commas because they are so variable in allowed placements,
+      so should a character take an extra pause (I am equating commas to pauses,
+      for the sake of this exercise) while saying something that could be
+      considered a motif, that instance will still count toward said motif's
+      total count. That said, bear in mind my decision here is based off of
+      almost no data and severely impacted by my personal biases, so it is
+      definitely worth investigating bigram counts with a different
+      interpretation of the possible punctuations.
+    </p>
+    <p>
+      At this point, it's also worth noting that one of the main problems with
+      using bigram analysis to find motifs is that it is only possible to form
+      2-word assocations, and it is technically impossible to draw definite
+      continued phrases from that. Take, for example, the phrase:
+    </p>
+    <div style="margin-left:50px;margin-right:50px;"><p><i>
+      "The sea was black and the moon was silver" (Victarion I, A Dance With
+      Dragons)
+    </i></p></div>
+    <p>
+      This phrase gets broken up into:
+    </p>
+    <div style="margin-left:50px;margin-right:50px;"><p><i>
+      {'and': {'the': 1}, 'moon': {'was': 1}, 'black': {'and': 1}, 'sea':
+      {'was': 1}, 'the': {'sea': 1, 'moon': 1}, 'was': {'black': 1,
+      'silver': 1}}
+    </i></p></div>
+    <p>
+      From here, it is impossible to tell if the original phrase was "The sea
+      was black and the moon was silver" or "The sea was silver and the moon was
+      black." Therefore, we also need to crossreference each potential motif
+      with the original text to make sure it actually appears in the text.
+    </p>
+    <p>
+      Now would be a good time to revisit the example motif, "where do whores
+      go" for Tyrion in <i>A Dance With Dragons</i>. Broken into bigrams "where
+      do", "do whores", and "whores go", we can look at the number of
+      occurrences for each listed bigram divided by the total number of
+      occurrences for all bigrams begining with "where", "do", and "whores",
+      which we will call C<sub>Tyrion</sub> for counts in that POV and
+      C<sub>All</sub> for counts in all POVs:
+    </p>
+    <center><table cellpadding="3" border="1" bordercolor="black" style="border-collapse:collapse">
+      <tr>
+	<th>Bigram</th>
+	<th>C<sub>Tyrion</sub></th>
+	<th>C<sub>All</sub></th>
+	<th>C<sub>Tyrion</sub> / C<sub>All</sub></th>
+      </tr>
+      <tr>
+	<td>where -> do</td>
+	<td>0.0409836065574</td>
+	<td>0.017825311943</td>
+	<td>2.29918032787</td>
+      </tr>
+      <tr>
+	<td>do -> whores</td>
+	<td>0.0245398773006</td>
+	<td>0.00470035252644</td>
+	<td>5.22085889571</td>
+      </tr>
+      <tr>
+	<td>whores -> go</td>
+	<td>0.179487179487</td>
+	<td>0.118644067797</td>
+	<td>1.51282051282</td>
+      </tr>
+    </table></center>
+    <p>
+      Judging from this, we should be able to find the bigrams with the highest
+      C<sub>POV</sub> / C<sub>All</sub> ratios and follow along the path of
+      bigrams, picking the most common next word and most common previous word,
+      until we hit a word that doesn't have a bigram with a ratio over, say,
+      1.5.
+    </p>
+    <p>
+      I ended up chosing to take the top two bigrams, rather than just the top
+      single bigram, for each iteration, mainly due to the fact that we are
+      looking for phrases greater than two words long, so we cannot guarentee
+      that every bigram in a motif will be the bigram with the highest ratio
+      given its first word. Two was an arbitrary cutoff, but for the purposes
+      of this project, seemed to serve well. I further verified each new
+      possible motif was still contained in the actual text of the books.
+    </p>
+    <p>
+      When we apply this algorithm to Tyrion's chapters in <i>A Dance With
+      Dragons</i>, we do, in fact, get our expected motif, "where do whores go"!
+      Interestingly, we even see a number of similar motifs to that one,
+      including "know where whores go," and "that be where whores go."
+    </p>
+    <p>
+      Overall, this algorithm did produce more false positives than desirable,
+      but the results were generally satisfactory. This number of false
+      positives could be expected, since not all POVs in all books contain
+      significant texual motifs. The results are listed, labeled by book and
+      POV, below.
+    </p>
+    <h2>Results</h2>
+    <h3><i>A Game of Thrones</i></h3>
+    <p>
+      <b>Arya</b>
+      <ul>
+        <li>look with your eyes</li>
+        <li>and arya felt the</li>
+        <li>her wooden sword was</li>
+        <li>the gold cloaks had</li>
+        <li>they don't know me</li>
+        <li>why not a second?</li>
+        <li>the fat one said</li>
+        <li>the fat man with</li>
+        <li>if they caught her</li>
+        <li>what are you talking</li>
+        <li>the red cloak and</li>
+        <li>was all her fault</li>
+        <li>she might be able</li>
+        <li>when they caught the</li>
+      </ul>
+    </p>
+    <p>
+      <b>Bran</b>
+      <ul>
+        <li>a story about a</li>
+        <li>the voice of robb the</li>
+        <li>the big man said.</li>
+        <li>no man can teach</li>
+        <li>lord father took the</li>
+        <li>face of robb the</li>
+        <li>the long night and</li>
+        <li>told him once that</li>
+        <li>to watch over him</li>
+        <li>grey wind and shaggydog</li>
+        <li>the first men and</li>
+        <li>if he didn't want</li>
+        <li>you should be the</li>
+        <li>and pulled himself up</li>
+        <li>his hand on hodor's</li>
+      </ul>
+    </p>
+    <p>
+      <b>Catelyn</b>
+      <ul>
+        <li>a stark in winterfell.</li>
+        <li>on them when that</li>
+        <li>no other way across</li>
+        <li>have sent word of</li>
+        <li>the steps were black</li>
+        <li>i must go to</li>
+        <li>a woman can be</li>
+      </ul>
+    </p>
+    <p>
+      <b>Daenerys</b>
+      <ul>
+        <li>an arm around her</li>
+        <li>i look back i</li>
+        <li>with ten thousand dothraki</li>
+        <li>the mother of mountains.</li>
+        <li>the child inside her.</li>
+        <li>keep me safe from harm.</li>
+        <li>the free city of</li>
+        <li>his long black hair</li>
+        <li>we will go home</li>
+        <li>she commanded her khas</li>
+        <li>she commanded ser jorah.</li>
+        <li>the knight looked at dany.</li>
+        <li>hair until it shone</li>
+        <li>her skin was cool</li>
+        <li>her down off her</li>
+        <li>the shadow lands beyond asshai</li>
+        <li>he can have her</li>
+        <li>your brother rhaegar was</li>
+        <li>when she sent her</li>
+        <li>yet even so dany</li>
+        <li>that all things of</li>
+        <li>she took him by</li>
+        <li>the big house with</li>
+        <li>her words in dothraki.</li>
+        <li>she asked as irri</li>
+        <li>she must not flinch</li>
+        <li>stallion who mounts the</li>
+      </ul>
+    </p>
+    <p>
+      <b>Eddard</b>
+      <ul>
+        <li>you win or you</li>
+        <li>lords tyrell and redwyne</li>
+        <li>her right leg to</li>
+        <li>the king's voice and</li>
+        <li>he commanded us to</li>
+        <li>ser loras tyrell and</li>
+        <li>ser loras tyrell was</li>
+        <li>the city watch is</li>
+        <li>when you play the</li>
+        <li>and why was i</li>
+        <li>you truly believe i</li>
+        <li>of wine was i</li>
+      </ul>
+    </p>
+    <p>
+      <b>Jon</b>
+      <ul>
+        <li>they led their horses</li>
+        <li>watch needs all sorts</li>
+        <li>just as your uncle was</li>
+        <li>i didn't want him</li>
+        <li>that this might be</li>
+        <li>do we have to</li>
+        <li>he found himself thinking</li>
+        <li>his name is ghost.</li>
+        <li>i don't care about</li>
+        <li>the other boys were</li>
+        <li>his throat was dry.</li>
+        <li>it felt good to</li>
+        <li>out from castle black</li>
+      </ul>
+    </p>
+    <p>
+      <b>Prologue</b>
+      <ul>
+        <li>will had been a</li>
+        <li>and it had been a</li>
+        <li>it had been a few</li>
+      </ul>
+    </p>
+    <p>
+      <b>Sansa</b>
+      <ul>
+        <li>the queen said so.</li>
+        <li>i'll tell you what</li>
+        <li>and told them to</li>
+        <li>but this time sansa</li>
+        <li>i'll be ever so</li>
+        <li>he stood over her</li>
+        <li>it please your grace</li>
+        <li>the small council consents.</li>
+        <li>she went on and</li>
+        <li>the king has decreed.</li>
+        <li>tell you what to</li>
+      </ul>
+    </p>
+    <p>
+      <b>Tyrion</b>
+      <ul>
+        <li>it if we are</li>
+        <li>that's what it is.</li>
+        <li>come out through his</li>
+        <li>you said they came at</li>
+        <li>but this time tyrion</li>
+        <li>he held out his</li>
+        <li>was cold up here</li>
+        <li>the moon brothers and</li>
+        <li>his legs were cramping</li>
+        <li>his legs were so</li>
+        <li>the boy had said.</li>
+        <li>no other men into</li>
+        <li>must have looked as</li>
+        <li>a big man i</li>
+        <li>if truth be told</li>
+        <li>the black on us</li>
+        <li>i have three men</li>
+        <li>out from under his</li>
+      </ul>
+    </p>
+
+    <h3><i>A Clash of Kings</i></h3>
+    <p>
+      <b>Arya</b>
+      <ul>
+        <li>lord tywin had marched</li>
+        <li>they don't know about the</li>
+        <li>we could find a</li>
+        <li>there's ghosts in harrenhal.</li>
+        <li>i don't know about</li>
+        <li>telling them how the</li>
+        <li>the next morning he</li>
+        <li>she wouldn't have let</li>
+        <li>she grabbed for needle</li>
+        <li>i'm not in chains</li>
+        <li>wouldn't even know me</li>
+        <li>they could find a</li>
+        <li>to help me get those</li>
+        <li>and who are you</li>
+        <li>a man must have</li>
+        <li>a bit her lip</li>
+        <li>make certain she'd heard</li>
+      </ul>
+    </p>
+    <p>
+      <b>Bran</b>
+      <ul>
+        <li>how much he hated</li>
+        <li>to talk about the</li>
+        <li>his hands around his</li>
+        <li>the stark in winterfell</li>
+        <li>you could see my</li>
+        <li>but when i sleep</li>
+        <li>that is coming to</li>
+        <li>that is what the</li>
+        <li>he could see them</li>
+        <li>and pulled himself up</li>
+      </ul>
+    </p>
+    <p>
+      <b>Catelyn</b>
+      <ul>
+        <li>her son had won</li>
+        <li>been no easy thing</li>
+        <li>my place is at</li>
+        <li>is mine by rights.</li>
+        <li>are no men like me.</li>
+        <li>fell in beside her</li>
+        <li>no need for battle</li>
+        <li>the end was some</li>
+        <li>they rode out in</li>
+        <li>of men like you.</li>
+        <li>i must do my duty.</li>
+        <li>will not speak with</li>
+      </ul>
+    </p>
+    <p>
+      <b>Daenerys</b>
+      <ul>
+        <li>the common tongue of</li>
+        <li>it shall be as</li>
+        <li>and die as blood</li>
+        <li>the mother of dragons.</li>
+        <li>and once for gold and</li>
+        <li>a dead man with</li>
+        <li>the first door on</li>
+        <li>the first door to</li>
+        <li>the first time she</li>
+        <li>his eyes from her</li>
+        <li>to keep me safe</li>
+        <li>the great of qarth</li>
+        <li>in this city of</li>
+        <li>it is said in</li>
+        <li>the red waste and</li>
+        <li>to leave this city</li>
+        <li>i have seen the</li>
+        <li>i have given you</li>
+        <li>dragon has three heads</li>
+      </ul>
+    </p>
+    <p>
+      <b>Davos</b>
+      <ul>
+        <li>his sons to consider</li>
+        <li>you have given me</li>
+        <li>the red sword of</li>
+        <li>a sword of fire!</li>
+        <li>the first line was</li>
+        <li>was on its way</li>
+        <li>you do not love</li>
+        <li>to bring down her</li>
+      </ul>
+    </p>
+    <p>
+      <b>Jon</b>
+      <ul>
+        <li>to castle black they</li>
+        <li>some men are like</li>
+        <li>be back at castle black</li>
+        <li>so far as jon</li>
+        <li>you can see it</li>
+        <li>that some men are</li>
+        <li>i could tell you</li>
+        <li>as far as jon</li>
+        <li>looked up into a</li>
+      </ul>
+    </p>
+    <p>
+      <b>Prologue</b>
+      <ul>
+        <li>was said that stannis</li>
+      </ul>
+    </p>
+    <p>
+      <b>Sansa</b>
+      <ul>
+        <li>lady mother said i</li>
+        <li>that will need to</li>
+        <li>i don't want to.</li>
+        <li>i don't want him</li>
+        <li>lord stannis is no</li>
+        <li>the gold cloaks of</li>
+        <li>she reached out and</li>
+        <li>he is no true knight</li>
+        <li>not know what to</li>
+      </ul>
+    </p>
+    <p>
+      <b>Theon</b>
+      <ul>
+        <li>lord balon had let</li>
+        <li>that only made him</li>
+        <li>and new with child.</li>
+        <li>he should have kept</li>
+        <li>so far as theon</li>
+        <li>is dead may never die</li>
+        <li>have come out on either</li>
+        <li>he were still a</li>
+        <li>to take my uncle</li>
+        <li>and my uncle victarion</li>
+        <li>he told himself to</li>
+        <li>the boy will give</li>
+      </ul>
+    </p>
+    <p>
+      <b>Tyrion</b>
+      <ul>
+        <li>until such time as</li>
+        <li>we went down a</li>
+        <li>i'll tell my sister.</li>
+        <li>from me before you</li>
+        <li>the high septon was</li>
+        <li>the high septon to</li>
+        <li>the gold cloaks had</li>
+        <li>a word from me</li>
+        <li>my own sweet sister</li>
+      </ul>
+    </p>
+
+    <h3><i>A Storm of Swords</i></h3>
+    <p>
+      <b>Arya</b>
+      <ul>
+        <li>black iron coin that jaqen</li>
+        <li>the outlaws had she</li>
+        <li>his big yellow cloak</li>
+        <li>some stupid little girl</li>
+        <li>to care who she</li>
+        <li>that lady smallwood gave</li>
+        <li>is there gold hidden</li>
+        <li>a stupid little girl</li>
+        <li>he's just like they</li>
+        <li>so she couldn't be</li>
+        <li>sat down beside her.</li>
+        <li>they looked more like</li>
+        <li>stood on one leg</li>
+        <li>but neither wolves nor</li>
+        <li>but she couldn't be</li>
+        <li>the three black dogs were</li>
+        <li>it down beside her.</li>
+        <li>you think we're going</li>
+        <li>i don't even know</li>
+        <li>you don't even know</li>
+        <li>fell in love with</li>
+        <li>it looked more like</li>
+        <li>look so little to</li>
+        <li>an arrow through his</li>
+      </ul>
+    </p>
+    <p>
+      <b>Bran</b>
+      <ul>
+        <li>the thing that came in</li>
+        <li>the green men had</li>
+        <li>and who can say?</li>
+        <li>the fat man was</li>
+        <li>in one hand and</li>
+        <li>the black brothers had</li>
+        <li>had never heard this</li>
+        <li>of them could find</li>
+      </ul>
+    </p>
+    <p>
+      <b>Catelyn</b>
+      <ul>
+        <li>words can set it</li>
+        <li>a table off its</li>
+        <li>it does not always</li>
+        <li>and too late for</li>
+        <li>i took an arrow</li>
+        <li>and how much i</li>
+        <li>the table off its</li>
+        <li>turned back to robb.</li>
+      </ul>
+    </p>
+    <p>
+      <b>Daenerys</b>
+      <ul>
+        <li>the house of dust.</li>
+        <li>had commanded the unsullied</li>
+        <li>the dragon has three</li>
+        <li>you told them i</li>
+        <li>the city gates and</li>
+        <li>the second sons were to</li>
+        <li>he should never have kissed</li>
+        <li>the seven kingdoms of</li>
+        <li>and once for gold and</li>
+        <li>i shall be betrayed</li>
+        <li>i need the unsullied</li>
+        <li>you must go back</li>
+        <li>the day they are</li>
+        <li>said that these eunuchs</li>
+        <li>she found herself wondering</li>
+      </ul>
+    </p>
+    <p>
+      <b>Davos</b>
+      <ul>
+        <li>of sea dragon tower</li>
+        <li>one whose name may not</li>
+        <li>the fiery heart on</li>
+        <li>the fiery heart of</li>
+        <li>the bastard of nightsong</li>
+        <li>they will burn you</li>
+        <li>she will burn you</li>
+        <li>even now he prayed</li>
+        <li>i tell him how</li>
+        <li>had always been a</li>
+        <li>he came up on</li>
+        <li>the night that never ends.</li>
+      </ul>
+    </p>
+    <p>
+      <b>Jaime</b>
+      <ul>
+        <li>my left hand i</li>
+        <li>do something about that.</li>
+        <li>in white sword tower</li>
+        <li>want no trouble with</li>
+        <li>my name is brienne</li>
+        <li>my name is -</li>
+        <li>his right hand that</li>
+        <li>a lannister always pays</li>
+        <li>get you safe to</li>
+        <li>his left hand i</li>
+        <li>bring you safe to</li>
+        <li>want him dead as</li>
+        <li>it fell to jaime</li>
+        <li>her hands to jaime</li>
+        <li>on your honor as</li>
+        <li>had ever seen her</li>
+        <li>of house lannister to</li>
+        <li>about his brave companions</li>
+        <li>to keep you safe</li>
+      </ul>
+    </p>
+    <p>
+      <b>Jon</b>
+      <ul>
+        <li>king's tower where he</li>
+        <li>the killing ground was</li>
+        <li>that half so well</li>
+        <li>i broke my vows with</li>
+        <li>whatever is asked of</li>
+        <li>with only one arm</li>
+        <li>maester aemon sent a</li>
+        <li>all men must die</li>
+        <li>they should have stayed</li>
+        <li>he walked past the</li>
+        <li>all in black to</li>
+        <li>no man knows that</li>
+        <li>his sword hand opened and</li>
+        <li>the two long blasts</li>
+        <li>sun was high in</li>
+        <li>had only one arm</li>
+        <li>wall will stop them</li>
+        <li>and kissed by fire</li>
+        <li>you never found the</li>
+      </ul>
+    </p>
+    <p>
+      <b>Prologue</b>
+      <ul>
+        <li>could be a dozen</li>
+        <li>the old bear had the</li>
+      </ul>
+    </p>
+    <p>
+      <b>Samwell</b>
+      <ul>
+        <li>the shadow tower men</li>
+        <li>and give her a</li>
+        <li>horse had died on</li>
+        <li>we don't know that</li>
+        <li>he'd told them all</li>
+        <li>could get out his</li>
+        <li>he reminded himself as</li>
+        <li>i can't go on.</li>
+        <li>it came out his</li>
+        <li>he took another step.</li>
+        <li>as we need more</li>
+        <li>the first men with</li>
+        <li>the first men and</li>
+        <li>him but maester aemon</li>
+        <li>but we don't know</li>
+      </ul>
+    </p>
+    <p>
+      <b>Sansa</b>
+      <ul>
+        <li>the silver hair net</li>
+        <li>the queen of thorns.</li>
+        <li>him up to plant</li>
+        <li>he got so drunk</li>
+        <li>a moment she want</li>
+        <li>not so drunk that</li>
+        <li>was so drunk that</li>
+        <li>his hand on her</li>
+        <li>the thought made her</li>
+        <li>he sat on her</li>
+      </ul>
+    </p>
+    <p>
+      <b>Tyrion</b>
+      <ul>
+        <li>are won with quills</li>
+        <li>the throne room for</li>
+        <li>in red leather and</li>
+        <li>a woman's hands are</li>
+        <li>looked back over his</li>
+        <li>you killed her children.</li>
+        <li>of king joffrey's wedding</li>
+        <li>the day before we</li>
+        <li>his pale green eyes</li>
+        <li>and your sister has</li>
+      </ul>
+    </p>
+
+    <h3><i>A Feast for Crows</i></h3>
+    <p>
+      <b>Alayne</b>
+      <ul>
+        <li>him out of bed</li>
+        <li>has a bastard daughter</li>
+        <li>the way he is.</li>
+        <li>and there will be</li>
+        <li>you can have some</li>
+        <li>it seemed as though</li>
+        <li>her father had warned</li>
+        <li>out of bed and</li>
+        <li>well as her own.</li>
+      </ul>
+    </p>
+    <p>
+      <b>Arya</b>
+      <ul>
+        <li>the house of black and</li>
+        <li>and who are you?</li>
+        <li>is no place for her.</li>
+        <li>to him of many faces.</li>
+        <li>he would find a</li>
+        <li>the next day she</li>
+        <li>the next day the</li>
+        <li>you will find the</li>
+        <li>you will find a</li>
+      </ul>
+    </p>
+    <p>
+      <b>Brienne</b>
+      <ul>
+        <li>with blue eyes and</li>
+        <li>a highborn maid of three-and-ten</li>
+        <li>a maid of three-and-ten</li>
+        <li>and broken men in</li>
+        <li>i swear it by</li>
+        <li>the big man laughed.</li>
+        <li>are more like this</li>
+        <li>she might well have</li>
+        <li>one man told her</li>
+        <li>should have used the</li>
+      </ul>
+    </p>
+    <p>
+      <b>CatOfTheCanals</b>
+      <ul>
+        <li>was good to know</li>
+      </ul>
+    </p>
+    <p>
+      <b>Cersei</b>
+      <ul>
+        <li>who called himself the</li>
+        <li>the myrish woman was</li>
+        <li>that our knight of</li>
+        <li>the realm is going</li>
+        <li>i love you too</li>
+        <li>it could well be</li>
+        <li>until such time as</li>
+        <li>when my son was</li>
+        <li>the gods were good</li>
+        <li>you are here to</li>
+      </ul>
+    </p>
+    <p>
+      <b>Jaime</b>
+      <ul>
+        <li>and osmund kettleblack and moon boy for</li>
+        <li>send men after the</li>
+        <li>the silent knight who</li>
+        <li>it true that tywin was</li>
+        <li>he made that clacking</li>
+        <li>take up arms against</li>
+        <li>and three hundred men</li>
+        <li>of one last harvest.</li>
+        <li>to make up for</li>
+      </ul>
+    </p>
+    <p>
+      <b>Prologue</b>
+      <ul>
+        <li>and i should like</li>
+      </ul>
+    </p>
+    <p>
+      <b>Samwell</b>
+      <ul>
+        <li>the wall with maester aemon</li>
+        <li>tell them that aemon</li>
+        <li>said something in braavosi.</li>
+        <li>are no happy endings.</li>
+        <li>he asked her what</li>
+        <li>of men who can</li>
+        <li>we might even have</li>
+        <li>back at horn hill</li>
+        <li>time they got the</li>
+        <li>done with maester aemon.</li>
+        <li>not know what to</li>
+      </ul>
+    </p>
+    <p>
+      <b>Sansa</b>
+      <ul>
+        <li>he'd been at the</li>
+        <li>that might have come</li>
+        <li>has no need for</li>
+        <li>not see him like</li>
+        <li>but she never meant</li>
+        <li>the big man in</li>
+        <li>i never gave you</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheCaptainOfGuards</b>
+      <ul>
+        <li>the prince was still</li>
+        <li>the children at their play.</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheDrownedMan</b>
+      <ul>
+        <li>on and on and on</li>
+        <li>who shall be king over</li>
+        <li>took up the cry</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheIronCaptain</b>
+      <ul>
+      </ul>
+    </p>
+    <p>
+      <b>ThePrincessInTheTower</b>
+      <ul>
+        <li>the prince of dome.</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheProphet</b>
+      <ul>
+        <li>the priest had no</li>
+        <li>the priest had been a</li>
+        <li>and now he feasts</li>
+        <li>the king is dead!</li>
+        <li>had been born from</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheQueenmaker</b>
+      <ul>
+      </ul>
+    </p>
+    <p>
+      <b>TheReaver</b>
+      <ul>
+        <li>the sea and euron</li>
+        <li>so he took her</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheSoiledKnight</b>
+      <ul>
+        <li>ser arys had a</li>
+        <li>she will not be</li>
+        <li>would never have seen</li>
+      </ul>
+    </p>
+
+    <h3><i>A Dance With Dragons</i></h3>
+    <p>
+      <b>AGhostInWinterfell</b>
+      <ul>
+        <li>the man was just</li>
+      </ul>
+    </p>
+    <p>
+      <b>Bran</b>
+      <ul>
+        <li>the heart tree in</li>
+        <li>a thousand eyes and</li>
+        <li>but in those days</li>
+        <li>the big black birds</li>
+        <li>into their eyes and</li>
+        <li>he does not eat</li>
+        <li>of them were gone</li>
+      </ul>
+    </p>
+    <p>
+      <b>Cersei</b>
+      <ul>
+        <li>his grace king robert</li>
+        <li>of your high holiness</li>
+        <li>for all that she</li>
+        <li>as his high holiness</li>
+        <li>has been so long</li>
+        <li>with them were the</li>
+        <li>the men who had</li>
+        <li>no one will tell</li>
+      </ul>
+    </p>
+    <p>
+      <b>Daenerys</b>
+      <ul>
+        <li>done she sent her</li>
+        <li>the green grace i</li>
+        <li>a young girl and</li>
+        <li>a young girl who</li>
+        <li>must keep them safe</li>
+        <li>the good masters had</li>
+        <li>why did they give</li>
+        <li>city that once was</li>
+        <li>will soon be at</li>
+        <li>would soon be at</li>
+        <li>this one heard you</li>
+        <li>all men must die</li>
+        <li>the ships are yours</li>
+        <li>she found herself thinking</li>
+        <li>a tall man with</li>
+        <li>she wondered how the</li>
+        <li>her arms around her</li>
+        <li>every day she sent</li>
+        <li>it is known that</li>
+        <li>i look back i</li>
+      </ul>
+    </p>
+    <p>
+      <b>Davos</b>
+      <ul>
+        <li>that could be good</li>
+        <li>had always been closed</li>
+        <li>my friends of frey</li>
+        <li>the three sisters had</li>
+        <li>your head and hands</li>
+        <li>man could see the</li>
+        <li>to send you to</li>
+        <li>to send him back</li>
+        <li>send you to white</li>
+        <li>and even the firth</li>
+        <li>to your king stannis</li>
+        <li>i have never had</li>
+        <li>for your king stannis</li>
+        <li>are you in sisterton</li>
+      </ul>
+    </p>
+    <p>
+      <b>Epilogue</b>
+      <ul>
+        <li>an end to it</li>
+        <li>but it would not</li>
+      </ul>
+    </p>
+    <p>
+      <b>Jaime</b>
+      <ul>
+      </ul>
+    </p>
+    <p>
+      <b>Jon</b>
+      <ul>
+        <li>on days like this</li>
+        <li>of castle black had</li>
+        <li>help us hold the</li>
+        <li>red woman might want</li>
+        <li>the raven flapped its wings</li>
+        <li>find another wet nurse</li>
+        <li>for our common foe</li>
+        <li>a grey girl on</li>
+        <li>i fear you flatter</li>
+        <li>had once told jon</li>
+        <li>the bastard sword with</li>
+        <li>to give up their</li>
+        <li>i can only hope</li>
+        <li>a broken sword with</li>
+        <li>a few words of</li>
+      </ul>
+    </p>
+    <p>
+      <b>Melisandre</b>
+      <ul>
+        <li>it would not be</li>
+      </ul>
+    </p>
+    <p>
+      <b>Prologue</b>
+      <ul>
+        <li>i should have taken</li>
+        <li>the flesh of man</li>
+      </ul>
+    </p>
+    <p>
+      <b>Reek</b>
+      <ul>
+        <li>that other man had</li>
+        <li>and remember who you</li>
+        <li>your name is reek</li>
+        <li>lord ramsay gave him</li>
+        <li>lord ramsay gave the</li>
+        <li>my name is reek</li>
+        <li>he'd been before he</li>
+        <li>will make you smell</li>
+        <li>had to remember his</li>
+        <li>will take another finger</li>
+        <li>the way he smells</li>
+        <li>but it had to</li>
+        <li>could not let them</li>
+        <li>to take another finger</li>
+        <li>had come this way</li>
+      </ul>
+    </p>
+    <p>
+      <b>Samwell</b>
+      <ul>
+        <li>and gave him a</li>
+        <li>all that you were</li>
+        <li>the man on the</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheBlindGirl</b>
+      <ul>
+        <li>the blind girl had learned</li>
+        <li>of black and white</li>
+        <li>not for his own</li>
+        <li>not know that she</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheDiscardedKnight</b>
+      <ul>
+        <li>he could not help</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheDragontamer</b>
+      <ul>
+        <li>this will be the</li>
+        <li>and he could hear</li>
+        <li>of a brazen beast</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheGriffinReborn</b>
+      <ul>
+        <li>before they had the</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheIronSuitor</b>
+      <ul>
+        <li>who had seen the</li>
+        <li>he had seen the</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheKingbreaker</b>
+      <ul>
+        <li>we do not a</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheLostLord</b>
+      <ul>
+        <li>they will not be</li>
+        <li>do not have the</li>
+      </ul>
+    </p>
+    <p>
+      <b>Theon</b>
+      <ul>
+        <li>he and her sisters</li>
+        <li>we will be seen</li>
+        <li>we will be a</li>
+      </ul>
+    </p>
+    <p>
+      <b>ThePrinceOfWinterfell</b>
+      <ul>
+        <li>of white and grey</li>
+        <li>he should have no</li>
+        <li>i could be a</li>
+        <li>and when he does</li>
+        <li>grey and grey and grey</li>
+        <li>would have no more</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheQueensguard</b>
+      <ul>
+        <li>hizdahr had not for</li>
+        <li>it had been a</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheSacrifice</b>
+      <ul>
+        <li>but she could not</li>
+        <li>the lord of light</li>
+        <li>you have my word</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheSpurnedSuitor</b>
+      <ul>
+        <li>is what you want</li>
+        <li>this is what i</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheTurncloak</b>
+      <ul>
+        <li>the snow was falling</li>
+        <li>this is only a</li>
+        <li>this is not my</li>
+        <li>theon had left behind</li>
+        <li>was no more than a</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheUglyLittleGirl</b>
+      <ul>
+        <li>the house of black and white</li>
+        <li>the man she wanted</li>
+        <li>is not for you</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheWatcher</b>
+      <ul>
+        <li>the white knight and</li>
+        <li>the captain of guards</li>
+        <li>him in king's landing</li>
+        <li>i would not be</li>
+        <li>back to king's landing</li>
+        <li>of them in turn</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheWaywardBride</b>
+      <ul>
+        <li>the wolves have the</li>
+        <li>die with an axe</li>
+        <li>he might not have</li>
+        <li>she could not have said</li>
+      </ul>
+    </p>
+    <p>
+      <b>TheWindblown</b>
+      <ul>
+        <li>had it from old bill</li>
+        <li>frog had it from</li>
+      </ul>
+    </p>
+    <p>
+      <b>Tyrion</b>
+      <ul>
+        <li>our captain would prefer</li>
+        <li>never reach her destination</li>
+        <li>they set up for</li>
+        <li>the nine free cities</li>
+        <li>the fiery fingers were</li>
+        <li>come up behind them</li>
+        <li>with little bells on</li>
+        <li>a lannister always pays</li>
+        <li>would only serve to</li>
+        <li>the serving men who</li>
+        <li>and any other treasures</li>
+        <li>are there any other</li>
+        <li>know where whores go</li>
+        <li>a game of cyvasse</li>
+        <li>the fat man made</li>
+        <li>the fat man began</li>
+        <li>a woman's hands are warm</li>
+        <li>where do whores go</li>
+        <li>the common tongue as</li>
+        <li>the common tongue of</li>
+        <li>a very bad idea</li>
+        <li>that be where whores go</li>
+        <li>how did you sleep</li>
+        <li>so hard that tyrion</li>
+        <li>for another game of cyvasse</li>
+      </ul>
+    </p>
+    <p>
+      <b>Victarion</b>
+      <ul>
+        <li>the iron fleet numbered</li>
+      </ul>
+    </p>
+
+    <p>
+      And thanks to <a href="https://github.com/lordchair">lordchair</a> for
+      the raw texts of the books!
+    </p>
+  </body>
+</html>
