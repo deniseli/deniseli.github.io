@@ -1,0 +1,217 @@
+<html>
+  <head>
+    <title>Projects: Yelp Dataset Challenge: Reviewer Harshness</title>
+  </head>
+  <body>
+    <h1>Yelp Dataset Challenge: Reviewer Harshness</h1>
+    <p>
+      <a href="https://github.com/deniseli1231/yelpchallenge">Link to code</a>
+    </p>
+    <p>
+      The purpose of this project is to calculate a "harshness" grade for each
+      reviewer and then normalize the ratings of businesses against these
+      harshness grades, using the academic dataset provided by Yelp for their
+      Dataset Challenge.
+    </p>
+    <h2>Calculating Reviewer Harshness</h2>
+    <p>
+      The harshness of a reviewer is calculated by looking at each review,
+      dividing the business's average rating by the star rating given by this
+      reviewer, and then taking the average across all reviews. Since the star
+      rating is on a scale of 1 to 5, the harshness values all range from 0.2 to
+      5.0, with 5.0 being the harshest, 0.2 the least harsh, and 1.0 neutral.
+      The output from this process was stored in user_harshness.json.
+    </p>
+    <p>
+      Before deciding how to proceed, we should look at what the distribution
+      of harshnesses is. We are looking for something along the lines of a
+      normal distribution (although I don't know how complete this dataset is,
+      or how it was built, so I will not make any claims about the precise
+      distribution it should have). Obviously, the distribution of the harshness
+      ratios we calculated above will be <i>very</i> asymmetrical, since it
+      ranges from 0.2 to 5 with an expected mean at 1. Therefore, we will look
+      at the base 5 logs of the harshness scores rather than the raw scores,
+      which will give us an expected mean at 0 and a range from
+      log<sub>5</sub>(0.2) to log<sub>5</sub>(5), or -1 to 1. Note that any
+      base log will technically work to make our distribution symmetrical; I
+      only chose base 5 because it gives a nice range to work with.
+    </p>
+    <p>
+      Without any further ado, the histograms:
+    </p>
+    <center>
+      <image src="yelpchallenge_histos/h.png">
+      <image src="yelpchallenge_histos/log_h.png">
+    </center>
+    <p>
+      Interestingly, we see that although there are several large spikes just
+      below h=1 and log<sub>5</sub>(h)=0, the median is higher than expected,
+      and there is a much more even spread to the right of the mean. We also see
+      spikes at h=2, h=2.5, h=3, h=3.5, and h=4. This can be explained by the
+      large number of users who have only left one or two reviews. What is much
+      more surprising is that we do not see these spikes corresponding on the
+      "less harsh" side of the graphs, h<1 and log<sub>5</sub>(h)<0. This could
+      indicate that users are harsh in varying degrees, but if they are being
+      unusually kind, it will only by slightly more than expected.
+    </p>
+    <h2>Normalizing Business Ratings by Reviewer Harshness</h2>
+    <p>
+      Now, we need to normalize the business ratings using the users' individual
+      harshness grades. To do this, I recalculated the average star rating, not
+      across each review rating, but across each review rating multiplied by the
+      reviewer's harshness. One caveat here is that if a user has only written a
+      single review, the star rating for that review will be interpreted as the
+      average rating for that business. To understand why this happens, suppose
+      a user U leaves a review with rating R<sub>U</sub> for business B, which
+      has an average rating (not normalized for harshness) of R<sub>avg</sub>.
+      We calculate the harshness of a reviewer, H, by averaging his ratio of
+      average business rating to his own ratings, so H<sub>R</sub> =
+      R<sub>avg</sub> / R<sub>U</sub>. Now, we normalize user U's rating for
+      business B by multiplying H<sub>R</sub> by R<sub>U</sub>. Let's call this
+      R<sub>norm</sub>. Thus:
+    </p>
+    R<sub>norm</sub> = H<sub>R</sub> * R<sub>U</sub> = R<sub>avg</sub> /
+    R<sub>U</sub> * R<sub>U</sub> = R<sub>avg</sub>
+    <p>
+      It's debatable whether this is a bug or a feature. On one hand, a user who
+      has only left one review is not very reliable, so you may not want that
+      first review to have a significant impact on the business's overall star
+      value. On the other hand, people who have not left other reviews are not
+      necessarily unreliable reviewers. Essentially, this boils down to whether
+      you are more concerned with avoiding false positives or false negatives.
+    </p>
+    <p>
+      There are a couple ways you could get around this problem, such as using a
+      convex combination of R<sub>U</sub> and R<sub>norm</sub>. However, the
+      issue with that approach is finding a good way to determine the
+      coefficients in that combination. The simple way would be to use 0.5 *
+      R<sub>U</sub> + 0.5 * R<sub>norm</sub>, essentially reducing the magnitude
+      of the change in the business's star rating by 50%. Another way would be
+      look at the distribution of harshness scores per review for each user and
+      basing the coefficients of the convex combination on the margin of error
+      for that dataset. So if we model our combination as:
+    </p>
+    <center>
+      x * R<sub>U</sub> + y * R<sub>norm</sub>
+    </center>
+    <p>
+      Suppose a user A's reviews had harshnesses [2.3, 2.4, 1.9, 2.1, 2.3, 2],
+      user A would have a relatively low margin of error, compared to user B's
+      reviews, with harshnesses [0.2, 3.8], which has a relatively high margin
+      of error. For user A, y should be higher and x should be lower, because
+      we are fairly certain that user A's average harshness score is accurate,
+      both because our sample size is larger and the standard deviation is
+      lower. For user B, x should be higher and y should be lower, because we
+      have very low confidence in our harshness estimation, due to the low
+      sample size and the high standard deviation.
+    </p>
+    <p>
+      This is arguably a better solution than simply using 0.5 for both
+      coefficients, since it tailors the combination to our confidence for each
+      user. However, I was unable to invent a function that took a margin of
+      error as input, gave coefficients as output, and did not pollute the data
+      with arbitrary, subjective decisions. Therefore, I chose to leave this
+      bug-feature in my analysis, primarily for the sake of purity. That said,
+      should anyone choose to actually implement harshness normalization on a
+      real product, I believe it would be worth taking another look at the
+      option I just described.
+    </p>
+    <p>
+      Now, it's time to see how factoring in reviewer harshness actually impacts
+      the star ratings for businesses. I went through and recalculated each
+      business's rating using R<sub>norm</sub> instead of R<sub>U</sub>, and then
+      generated the distribution of each.
+    </p>
+    <center>
+      <image src="yelpchallenge_histos/r_u.png">
+      <image src="yelpchallenge_histos/r_norm.png">
+    </center>
+    <p>
+      There are two particular points of interest here. First, the mean and
+      median have both shifted up, the median slightly more than the mean.
+      Second, the normalized ratings have many scores outside the normal range
+      for reviews - below 1 and above 5. Specifically, 18.083% of ratings are
+      above 5.0, and 0.115% of ratings are below 1.0. Because the original
+      distribution of ratings was skewed left, the normalization process has
+      created a distribution much closer to a normal curve. This could just be
+      a mathematical consequence of the process, but it could also suggest that
+      users, either consciously or subconsciously, inflate the reviews they give
+      businesses, and that adjusting for user harshness has the power to negate
+      this inflation on a percentile basis.
+    </p>
+    <p>
+      For a more fair comparison between the two, I removed the outliers 
+      (greater than 3 standard deviations from the mean) and reduced the range
+      to be between 1 and 5. The results are below.
+    </p>
+    <center>
+      <image src="yelpchallenge_histos/r_norm_adj.png">
+    </center>
+    <p>
+      If we consider 3.0 to be the expected rating for an "average" business,
+      this final graph looks ideal. Both the mean and median are within 0.02 of
+      3.0. By normalizing business ratings by reviewer harshness and adjusting
+      the range to the expected values, I created a much more realistic
+      representation of the real quality of businesses. If anyone were to
+      implement harshness normalization as a feature in a real product's review
+      system, this adjusted distribution is the one I would recommend using.
+    </p>
+    <h2>Comparing Rating Systems</h2>
+    <p>
+      The bulk of this project is already done at this point, but further
+      analysis is always interesting. It's worth looking at how the new ratings
+      system, adjusting for reviewer harshness and range, compares to the old
+      one of raw scores. Here's a histogram of the differences between the two
+      for each company.
+    </p>
+    <center>
+      <image src="yelpchallenge_histos/diff.png">
+    </center>
+    <p>
+      As expected, the bulk of the ratings decreased. I suppose one drawback of
+      adjusting ratings for user harshness would be that - the businesses being
+      reviewed would probably not be happy with it. However, I believe the
+      positive impact on users would outweigh that consequence, as the
+      adjustment makes ratings much more meaningful and, most likely, accurate.
+    </p>
+    <p>
+      Every rating system has been plagued with one central issue - every user
+      has a different idea of what each number rating means. This problem makes
+      the distribution of ratings messy, noisy, inflated, and as a result,
+      inaccurate. By normalizing each user's ratings based on his or her own
+      specific bias, we eliminate this noise and rating inflation entirely. As a
+      result, this new system is clean, accurate, and most importantly,
+      meaningful.
+    </p>
+    <p>
+      In the difference graph above, normalizing by user harshness not only
+      makes very significant changes to each business's rating, but also impacts
+      how they directly compare to each other. Considering most users choose the
+      local business with the highest rating, moving businesses around in the
+      ranks can make significant impacts. Using these results, a user would
+      choose a better business than they otherwise would have, and therefore
+      have gained more from using the product.
+    </p>
+    <p>
+      Obviously, these are all just my assumptions. We can't say anything
+      definitively without conducting formal experiments. However, the
+      distributions this project produced are extremely promising, and I
+      would not hesitate to argue that more research should be done on this
+      subject. Normalizing reviews by user harshness has the potential to
+      negate one of the biggest, most pervasive problems with the user review
+      system. User reviews are integral to the technology sector today, so
+      making a significant improvement to the way ratings are processed will
+      have a fantastic impact on the industry.
+    </p>
+    <p>
+      I used <a href="http://www.numpy.org">numpy</a> and
+      <a href="http://scipy.org">scipy</a> to make most of the major
+      calculations in this project, and I used
+      <a href="http://matplotlib.org/api/pyplot_api.html">pyplot</a> to generate
+      the histograms.
+    </p>
+    <p>
+      Thanks to Yelp for the dataset!
+    </p>
+  </body>
+</html>
