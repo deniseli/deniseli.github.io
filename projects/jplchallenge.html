@@ -1,0 +1,259 @@
+<html>
+  <head>
+    <title>Projects: 2015 NASA JPL Competition</title>
+  </head>
+  <body>
+    <h1>2015 NASA JPL Space Design Competition</h1>
+    <p>
+      <a href="https://github.com/deniseli1231/JPLChallenge2015">Link to Github repo</a><br>
+      <a href="https://wiki.cites.illinois.edu/wiki/display/jplteam/2015+NASA+Jet+Propulsion+Laboratory+Team+Space+Design+Competition">Link to competition wiki</a>
+    </p>
+    <p>
+      The purpose of this project is to find safe landing sites for a lander on
+      Mars. For more detail on the rules, constraints, and data files, please
+      visit the above link to the competition's wiki.
+    </p>
+    <h2>Data Files</h2>
+    <p>
+      The team running this competition provided us with 4 sets of training
+      data, with 4 files in each dataset. Our solution only uses the Digital
+      Elevation Map (DEM) from each of these datasets, which is given in .pgm
+      format. This is a 500 by 500 grid of heights in meters, with a resolution
+      of 0.2 m/pixel.
+    </p>
+    <p>
+      As output, our code is expected to output a 1000 by 1000 grid of integers
+      designating whether each particular position is a safe landing site,
+      supposing the center of the lander is at that particular point. The
+      solution should be stored in a pgm format. In the solution, 0 means a
+      location is not a safe landing site and 255 means a location is a safe
+      landing site.
+    </p>
+    <h2>Constraints</h2>
+    <p>
+      In order to understand what a safe landing site is, we first need to
+      understand what the lander looks like. The lander is circular. It has a
+      3.4 m diameter base plate, with 4 footpads located at 90&deg; intervals
+      around the edge of the base plate. Each footpad is circular and 0.5 m
+      across. The ground clearance of the belly is 0.39 m.
+    </p>
+    <p>
+      There are two main constraints defining what constitutes a safe landing
+      site, slope and roughness. The lander cannot safely land on a location
+      of extreme slope, as it will be unstable and may slide or flip over. The
+      threshold for slope is predefined as 10&deg;. The lander also cannot land
+      on a location deemed too rough, meaning there must not be any rock or land
+      formation under the belly of the lander that is tall enough to penetrate
+      the base plate. This means there cannot be any rocks taller than 0.39 m.
+    </p>
+    <h2>Algorithm Outline</h2>
+    <ol>
+      <li>Initialize (1000,1000) <a href="http://www.numpy.org">numpy</a> array
+	solution with zeros.</li>
+      <li>Set solution[20:979, 20:979] to 255 as points that may be allowable.
+	Edges are disallowed per the competition rules.</li>
+      <li>Block out points of extreme slope.</li>
+      <li>Block out points of roughness.</li>
+      <li>Output solution to solutions/datasetname.pgm.</li>
+    </ol>
+    <h2>Slope: Pseudocode</h2>
+    <samp>
+      <b>a</b> = angle/slope bound<br>
+      <b>d</b> = distance (rover width) in pixels</br>
+      Parallelized outer loop using Pool.apply_async() from
+      <a href="https://docs.python.org/2/library/multiprocessing.html">
+	multiprocessing</a> module:<br>
+      For <b>i</b> in <b>10</b>...<b>490</b>:<br>
+      &nbsp; For <b>j</b> in <b>10</b>...<b>490</b>:<br>
+      &nbsp; &nbsp; <b>points</b> := list of <b>16</b> points spaced evenly
+      around a circle of radius <b>d</b> around points (<b>i</b>, <b>j</b>)<br>
+      &nbsp; &nbsp; For <b>p</b> in <b>0</b>...<b>16</b>:<br>
+      &nbsp; &nbsp; &nbsp; <b>p1</b> := <b>points</b>[<b>p</b>]<br>
+      &nbsp; &nbsp; &nbsp; <b>p2</b> := <b>points</b>[(<b>p</b>+<b>4</b>)%<b>16</b>]
+      // 90 degrees from p1<br>
+      &nbsp; &nbsp; &nbsp; <b>p3</b> := <b>points</b>[(<b>p</b>+<b>8</b>)%<b>16</b>]
+      // 180 degrees from p1<br>
+      &nbsp; &nbsp; &nbsp; <b>n</b> := crossproduct(vector from <b>p2</b> to <b>p1</b>, 
+      vector from <b>p2</b> to <b>p3</b>)<br>
+      &nbsp; &nbsp; &nbsp; <b>angle</b> := arccos(dotproduct(<b>n</b>, (<b>0</b>,
+      <b>0</b>, <b>-1</b>)) / norm(<b>n</b>))<br>
+      &nbsp; &nbsp; &nbsp; if <b>angle</b> > <b>a</b>:<br>
+      &nbsp; &nbsp; &nbsp; &nbsp; <b>solution</b>[<b>2</b>*<b>i</b>, <b>2</b>*<b>j</b>]
+      := <b>0</b><br>
+      &nbsp; &nbsp; &nbsp; &nbsp; <b>solution</b>[<b>2</b>*<b>i</b>+<b>1</b>,
+      <b>2</b>*<b>j</b>] := <b>0</b><br>
+      &nbsp; &nbsp; &nbsp; &nbsp; <b>solution</b>[<b>2</b>*<b>i</b>,
+      <b>2</b>*<b>j</b>+<b>1</b>] := <b>0</b><br>
+      &nbsp; &nbsp; &nbsp; &nbsp; <b>solution</b>[<b>2</b>*<b>i</b>+<b>1</b>,
+      <b>2</b>*<b>j</b>+<b>1</b>] := <b>0</b><br>
+      &nbsp; &nbsp; &nbsp; &nbsp; break
+    </samp>
+    <h2>Roughness: Pseudocode</h2>
+    <samp>
+      <b>r</b> = roughness bound<br>
+      <b>d</b> = distance (rover width) in pixels<br>
+      For <b>i</b> in <b>1</b>...<b>499</b>:<br>
+      &nbsp; For <b>j</b> in <b>1</b>...<b>499</b>:<br>
+      &nbsp; &nbsp; // Initialize multiplier array for calculating height at point x<br>
+      &nbsp; &nbsp; // between two other points<br>
+      &nbsp; &nbsp; <b>m</b> :=[<b>1</b>,...,<b>d</b>] / (<b>d</b> + <b>1</b>)<br>
+      &nbsp; &nbsp; // Calculate plane height at each lander position in vertical and<br>
+      &nbsp; &nbsp; // horizontal ranges around points (i, j)<br>
+      &nbsp; &nbsp; // * and + here are element-wise operations<br>
+      &nbsp; &nbsp; <b>iheights</b> := <b>m</b> * <b>DEM</b>[<b>i</b>-<b>d</b>:<b>i</b>,
+      <b>j</b>] + reverse(<b>m</b>) * <b>DEM</b>[<b>i</b>:<b>i</b>+<b>d</b>, <b>j</b>]<br>
+      &nbsp; &nbsp; <b>jheights</b> := <b>m</b> * <b>DEM</b>[<b>i</b>,
+      <b>j</b>-<b>d</b>:<b>j</b>] + reverse(<b>m</b>) * 
+      <b>DEM</b>[<b>i</b>, <b>j</b>:<b>j</b>+<b>d</b>]<br>
+      &nbsp; &nbsp; // If elevation at (i, j) is more than r higher than an height in<br>
+      &nbsp; &nbsp; // iheights or jheights, then (i, j) is a point of roughness. Block<br>
+      &nbsp; &nbsp; // out the circle of points that would be affected.<br>
+      &nbsp; &nbsp; if <b>DEM</b>[<b>i</b>, <b>j</b>] - <b>r</b> > min(<b>iheights</b>) or
+      <b>DEM</b>[<b>i</b>, <b>j</b>] - <b>r</b> > min(<b>jheights</b>):<br>
+      &nbsp; &nbsp; &nbsp; For (<b>x</b>, <b>y</b>) in
+      getCircleIndices(center=(<b>i</b>*<b>2</b>, <b>j</b>*<b>2</b>), radius=<b>d</b>):<br>
+      &nbsp; &nbsp; &nbsp; &nbsp; <b>solution</b>[<b>x</b>, <b>y</b>] := <b>0</b>
+
+    </samp>
+    <h2>Performance</h2>
+    <h3>Summary</h3>
+    Let N = side length of the DEM (assuming a square shape)<br>
+    Let X = number of points of roughness in the DEM<br>
+    Slope: O(N<sup>2</sup>)<br>
+    Roughness: O(N<sup>2</sup> + X)<br>
+    Total computation complexity: O(N<sup>2</sup> + X)<br>
+    Memory Usage: (5N<sup>2</sup>) * 32 bits
+    <h3>Slope Optimizations</h3>
+    <p>
+      The naive solution would assume we need to check every possible set of 3
+      landing points for the footpads of the rover, which would be at least the
+      the circumference of the rover divided by average length in meters of a
+      pixel in the DEM. Realistically, it would probably need to check more
+      points to account for all possible positions where the tangent to the
+      circle is not vertical or horizontal. This means checking at least 54
+      points. Our solution only checks 16 points, so we cut out at least 70% of
+      the runtime that way.
+    </p>
+    <p>
+      We also chose to calculate the slopes using the plane normals, taking
+      advantage of (and also optimizing for) the fact that the rover has 4
+      discreet footpads, rather than calculating the gradient of the plane or
+      calculating the gradient at the central point. Calculating the gradient of
+      any plane is slower than finding its normal, so avoiding that in general is
+      preferable. Further, calculating gradient at the central point would be
+      inaccurate due to the nature of the problem - the rover is landing on
+      footpads around its edges, not a single leg in the middle.
+    </p>
+    <h3>Roughness Optimizations</h3>
+    <p>
+      We define the naive solution to be iterating over each point in the DEM,
+      calling getCircleIndices with c = the current point, and checking if any of
+      those points are taller than any of the planes formed by 3 of the border
+      points. Assuming this checks a constant number of angles A to find the
+      border points, getCircleIndices returns C points, and the DEM is size NxN,
+      the naive solution would run in time O(ACN<sup>2</sup>), which simplifies to
+      O(N<sup>2</sup>).
+    </p>
+    <p>
+      Our runtime in practice is much lower because we check if each point is
+      the point of roughness, rather than if each possible circle contains a
+      patch of roughness. We only call getCircleIndices if a point is rough,
+      so the runtime is dependent on X, the number of points of that are
+      raised/rough. We know X < N<sup>2</sup> and A is a large integer, so 
+      O(N<sup>2</sup> + CX) < O(ACN<sup>2</sup>). However, because A and C are
+      constants, our worse case runtime simplified is O(N<sup>2</sup> + X).
+    </p>
+    <h3>Worst Case vs Likely Case</h3>
+    <p>
+      Real runtime is inversely proportional to the amount of slope in the given
+      terrain. This is not reflected in O(N^2 + X) because the worst case
+      remains the same no matter how much slope there is. Our code breaks out of
+      the loop checking for slope at a given point once it knows the point is
+      sloped, which only affects big-Omega and Theta. Further, because the
+      getCircleIndices function used in our roughness calculations runs faster
+      when more of the points being checked in the circle have been set to 0,
+      our roughness calculation also runs faster when more points have been
+      blocked out due to slope.
+    </p>
+    <h2>Accuracy on the Training Data</h2>
+    <p>
+      We have the solution outputed by our algorithm on the left. On the right,
+      we have the difference between our solution and the real solution. We are
+      using the default colors from <a href="http://matplotlib.org">matplotlib</a>,
+      so on the left, red = 255 and blue = 0. On the right, green = correct, red
+      = false negative, and blue = false positive. We especially want to avoid
+      false positives, or incorrectly labeling an unsafe zone, because that could
+      lead to catastrophic failure, whereas a false negative would only mean
+      artificially limitted options.
+    </p>
+    <center>
+      <h3>Data Set 1</h3>
+      <img src="jplchallenge_images/sol1.png" width="40%">
+      <img src="jplchallenge_images/diff1.png" width="40%"><br>
+      False positives: 3934 = 2.02674854717 %<br>
+      False negatives: 9213 = 1.14319961881 %<br>
+      Total error: 13147 = 1.3147 %
+    </center>
+    <center>
+      <h3>Data Set 2</h3>
+      <img src="jplchallenge_images/sol2.png" width="40%">
+      <img src="jplchallenge_images/diff2.png" width="40%"><br>
+      False positives: 12066 = 1.54332594031 %<br>
+      False negatives: 21732 = 9.96049169959 %<br>
+      Total error: 33798 = 3.3798 %
+    </center>
+    <center>
+      <h3>Data Set 3</h3>
+      <img src="jplchallenge_images/sol3.png" width="40%">
+      <img src="jplchallenge_images/diff3.png" width="40%"><br>
+      False positives: 10286 = 1.17467292793 %<br>
+      False negatives: 21310 = 17.1368373649 %<br>
+      Total error: 31596 = 3.1596 %
+    </center>
+    <center>
+      <h3>Data Set 4</h3>
+      <img src="jplchallenge_images/sol4.png" width="40%">
+      <img src="jplchallenge_images/diff4.png" width="40%"><br>
+      False positives: 9149 = 1.00149419562 %<br>
+      False negatives: 22395 = 25.9006534436 %<br>
+      Total error: 31544 = 3.1544 %
+    </center>
+    <h3>Choosing Parameters</h3>
+    <p>
+      The choose our threshold values, we ran grid search over a range of
+      possible values for constants <b>a</b> and <b>r</b> to minimize average
+      total error.
+    </p>
+    Optimal values:<br>
+    <samp>a = 0.0364, r = 0.36</samp>
+    <h3>Parameter Selection References</h3>
+    Bergstra, J., Bardenet, R., Bengio, Y., & Kegl, B. (2011). Algorithms for Hyper-Parameter Optimization.<br>
+    Retrieved from http://papers.nips.cc/paper/4443-algorithms-for-hyper-parameter-optimization.pdf<br><br>
+
+    Hsu, C. W., Chang, C. C., & Lin, C. J. (2010, April 15). A Practical Guide to Support Vector Classification.<br>
+    Retrieved from http://www.csie.ntu.edu.tw/~cjlin/papers/guide/guide.pdf
+    <h3>FAQ</h3>
+    <b>1. You're using the height given in the DEM for roughness, but that doesn't
+    take the slope of the ground into consideration.</b><br>
+    We are filtering out all locations with a slope greater than 10 degrees, so
+    in the worst case scenario, the roughness code needs to handle a 10 degree
+    slope. cos(10&deg;) = 0.9848. So, in theory, the surface normal should be
+    taken into account, but with a difference of only 1.52%, this calculation
+    is unneccesary with a suitably conservative roughness constant.<br><br>
+    <b>2. I tried downloading the zip files and running your code on it, but it
+    isn't working!</b><br>
+    There is a typo in the naming consistency of the zips. That typo is fixed in
+    the unzipped data files on github, so try again with those. If you <i>need</i>
+    to use the zips for whatever reason, just look at the directory and file
+    names. The error should jump out at you.<br><br>
+    <b>3. I still don't understand the roughness part.</b><br>
+    Email me.
+
+    <p>
+      Competition day was April 25, 2015, and this submission took 3rd place.
+      Thanks to NASA and the Jet Propulsion Lab for the data and this great
+      opportunity!
+    </p>
+
+  </body>
+</html>
