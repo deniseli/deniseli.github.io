@@ -73,7 +73,7 @@ var updateAnimal = function(animal) {
 		    // animals are similar
 		    animal.feeling = HAPPY;
 		    animal.dir = dir;
-		} else if (similarity > MAX_SIM / 2) {
+		} else if (similarity > MAX_SIM  - 2 * SIM_RANGE) {
 		    // animals are not similar
 		    animal.feeling = FEARFUL;
 		    animal.dir = -1 * dir;
@@ -84,7 +84,7 @@ var updateAnimal = function(animal) {
 		    // animals are similar
 		    animal.feeling = HAPPY;
 		    animal.dir = dir;
-		} else if (similarity > MAX_SIM / 2) {
+		} else if (similarity > MAX_SIM  - 2 * SIM_RANGE) {
 		    // animals are not similar
 		    animal.feeling = ANGRY;
 		    animal.dir = dir;
@@ -98,12 +98,12 @@ var updateAnimal = function(animal) {
     animal.feeling = NEUTRAL;
 }.bind(this);
 
-var maybeKillAnimal = function(animal, i, svg) {
+var maybeKillAnimal = function(animal, index, svg) {
     for (var i = 0; i < animals.length; i++) {
 	var a = animals[i];
 	if (a.id != animal.id &&
 	    euclideanDist([a.x, a.y], [animal.x, animal.y]) < animalDiam &&
-	    a.aggression > 0.5
+	    a.feeling == ANGRY
 	   ) {
 	    // the animal has encountered another aggressive animal
 	    if (animal.aggression < a.aggression) {
@@ -113,7 +113,7 @@ var maybeKillAnimal = function(animal, i, svg) {
 		    .attr("cy", animal.y)
 		    .attr("r", animalDiam * 4)
 		    .style("fill", "red");
-		animals.splice(i, 1);
+		animals.splice(index, 1);
 		return true;
 	    }
 	}
@@ -130,24 +130,25 @@ var mainLoop = function() {
     // remove old elements
     svg.selectAll("circle").remove()
     // draw animals
-    animals.forEach(function(animal, i) {
+    for (var aid = animals.length - 1; aid >= 0; aid--) {
+	var animal = animals[aid];
 	// update
 	updateAnimal(animal);
-	var died = maybeKillAnimal(animal, i, svg);
-	var x = animal.x + Math.cos(animal.dir) * animal.speed;
-	var y = animal.y + Math.sin(animal.dir) * animal.speed;
-	while (x < animalDiam / 2 ||
-	       y < animalDiam / 2 ||
-	       x > width - animalDiam / 2 ||
-	       y > height - animalDiam / 2) {
-	    animal.dir = Math.random() * 2 * Math.PI;
+	var died = maybeKillAnimal(animal, aid, svg);
+	if (!died) {
 	    var x = animal.x + Math.cos(animal.dir) * animal.speed;
 	    var y = animal.y + Math.sin(animal.dir) * animal.speed;
-	}
-	animal.x = x;
-	animal.y = y;
-	// render if still alive
-	if (!died) {
+	    while (x < animalDiam / 2 ||
+		   y < animalDiam / 2 ||
+		   x > width - animalDiam / 2 ||
+		   y > height - animalDiam / 2) {
+		animal.dir = Math.random() * 2 * Math.PI;
+		var x = animal.x + Math.cos(animal.dir) * animal.speed;
+		var y = animal.y + Math.sin(animal.dir) * animal.speed;
+	    }
+	    animal.x = x;
+	    animal.y = y;
+	    // render
 	    svg.append("circle")
 		.attr("cx", animal.x)
 		.attr("cy", animal.y)
@@ -156,7 +157,7 @@ var mainLoop = function() {
 		.style("stroke-width", 3)
 		.style("stroke", animal.feeling);
 	}
-    }.bind(this));
+    }
     requestAnimationFrame(mainLoop);
 }.bind(this);
 
