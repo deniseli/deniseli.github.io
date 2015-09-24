@@ -122,13 +122,18 @@ var maybeKillAnimal = function(animal, index, svg) {
 }.bind(this);
 
 var mainLoop = function() {
-    // draw background
-    svg.append("rect")
-	.attr("width", "100%")
-	.attr("height", "100%")
-	.attr("fill", "rgb(250,250,250)");
     // remove old elements
     svg.selectAll("circle").remove()
+    svg.selectAll("g").remove()
+    // Add help text
+    svg.append("g").append("text")
+	.text("Click to add a zoo animal!")
+	.attr("x", width / 2)
+	.attr("y", height / 2)
+	.attr("text-anchor", "middle")
+	.attr("font-family", "helvetica")
+	.attr("font-size", 48)
+	.attr("fill", "rgb(200,200,200)");
     // draw animals
     for (var aid = animals.length - 1; aid >= 0; aid--) {
 	var animal = animals[aid];
