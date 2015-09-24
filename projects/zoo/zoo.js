@@ -87,7 +87,7 @@ var updateAnimal = function(animal) {
 	    } else if (similarity > MAX_SIM - 2 * animal.simRange) {
 		// animals are not similar
 		animal.feeling = FEARFUL;
-		animal.dir = (dir + Math.PI) % (2 * Math.PI);
+		animal.dir = dir - Math.PI;
  	    }
 	} else {
 	    // animal is aggressive
