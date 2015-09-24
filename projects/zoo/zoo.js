@@ -1,5 +1,4 @@
 var MAX_SIM = 441.6729559300637;
-var SIM_RANGE = 100; // arbitary cutoff, cannot exceed MAX_SIM / 2
 
 var NEUTRAL = "";
 var HAPPY = "lightgreen";
@@ -22,12 +21,13 @@ var addAnimal = function() {
 	x: Math.floor(x),
 	y: Math.floor(y),
 	dir: Math.random() * 2 * Math.PI,
-	speed: Math.random() * 5 + 2,
+	speed: Math.random() * 3 + 2,
 	feeling: NEUTRAL,
-	r: Math.floor(Math.random() * 255),
-	g: Math.floor(Math.random() * 255),
-	b: Math.floor(Math.random() * 255),
-	aggression: Math.random()
+	r: Math.floor(Math.random() * 256),
+	g: Math.floor(Math.random() * 256),
+	b: Math.floor(Math.random() * 256),
+	aggression: Math.random(),
+	simRange: Math.random() * 50 + 75
     });
     nextId++;
 }.bind(this);
@@ -44,6 +44,19 @@ var getDirOf = function(p1, p2) {
     return Math.atan((p2[1] - p1[1]) / (p2[0] - p1[0]));
 }
 
+var getNearestAnimalInRange = function(animal) {
+    var nearest = null;
+    var nearestDist = null;
+    animals.forEach(function(a) {
+	var dist = euclideanDist([a.x, a.y], [animal.x, animal.y]);
+	if (animal.id != a.id && dist < 100 && (nearest == null || nearestDist < dist)) {
+	    nearest = a;
+	    nearestDist = dist;
+	}
+    }.bind(this));
+    return nearest;
+};
+
 // Update the direction of the animal to have it pursue or avoid other animals
 // aggression   likable   change in dir  feeling
 // low          yes       toward         happy
@@ -52,50 +65,43 @@ var getDirOf = function(p1, p2) {
 // high         no        toward         angry
 // Animals can see animals 100px away
 var updateAnimal = function(animal) {
-    for (var ai = 0; ai < animals.length; ai++) {
-	var a = animals[ai];
-	if (a.id != animal.id &&
-	    euclideanDist([a.x, a.y], [animal.x, animal.y]) < 100
-	   ) {
-	    // a is in range of animal
-	    // calculate similarity between animals
-	    // max value of similarity = euclideanDist([0...], [255...]) = 441.6729559300637
-	    var similarity = euclideanDist(
-		[a.r, a.g, a.b],
-		[animal.r, animal.g, animal.b]
-	    );
-
-	    // act on similarity and aggresion
-	    var dir = getDirOf([animal.x, animal.y], [a.x, a.y]);
-	    if (animal.aggression < 0.5) {
-		// animal is not aggressive
-		if (similarity < SIM_RANGE) {
-		    // animals are similar
-		    animal.feeling = HAPPY;
-		    animal.dir = dir;
-		} else if (similarity > MAX_SIM  - 2 * SIM_RANGE) {
-		    // animals are not similar
-		    animal.feeling = FEARFUL;
-		    animal.dir = -1 * dir;
- 		}
-	    } else {
-		// animal is aggressive
-		if (similarity < SIM_RANGE) {
-		    // animals are similar
-		    animal.feeling = HAPPY;
-		    animal.dir = dir;
-		} else if (similarity > MAX_SIM  - 2 * SIM_RANGE) {
-		    // animals are not similar
-		    animal.feeling = ANGRY;
-		    animal.dir = dir;
-		}
+    var a = getNearestAnimalInRange(animal);
+    if (a == null) {
+	animal.feeling = NEUTRAL;
+    } else {
+	// calculate similarity between animals
+	// max value of similarity = euclideanDist([0...], [255...]) = 441.6729559300637
+	var similarity = euclideanDist(
+	    [a.r, a.g, a.b],
+	    [animal.r, animal.g, animal.b]
+	);
+	
+	// act on similarity and aggresion
+	var dir = getDirOf([animal.x, animal.y], [a.x, a.y]);
+	if (animal.aggression < 0.5) {
+	    // animal is not aggressive
+	    if (similarity < animal.simRange) {
+		// animals are similar
+		animal.feeling = HAPPY;
+		animal.dir = dir;
+	    } else if (similarity > MAX_SIM - 2 * animal.simRange) {
+		// animals are not similar
+		animal.feeling = FEARFUL;
+		animal.dir = (dir + Math.PI) % (2 * Math.PI);
+ 	    }
+	} else {
+	    // animal is aggressive
+	    if (similarity < animal.simRange) {
+		// animals are similar
+		animal.feeling = HAPPY;
+		animal.dir = dir;
+	    } else if (similarity > MAX_SIM - 2 * animal.simRange) {
+		// animals are not similar
+		animal.feeling = ANGRY;
+		animal.dir = dir;
 	    }
-
-	    // Animals are impulsive and react to the first animal they notice
-	    return;
 	}
     }
-    animal.feeling = NEUTRAL;
 }.bind(this);
 
 var maybeKillAnimal = function(animal, index, svg) {

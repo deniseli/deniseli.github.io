@@ -7,5 +7,93 @@
     <h1>Zoo Animals</h1>
     <svg id="zoo"></svg>
     <script src="zoo/zoo.js"></script>
+    <p>
+      This project isn't technically advanced. It's a social experiment. Rather,
+      it's a model of a social experiment, representing individuals in a group
+      as free moving nodes in the area of this svg element. Let's start with the
+      rules.
+    </p>
+    <ul>
+      <li>
+	Each animal is initialized with a speed in range [2,5) px/step, a random
+	direction, and a random initial position somewhere in the svg.
+      </li>
+      <li>
+	Each animal has 3 "personality" attributes (which define its identity).
+	The value of each attribute is in the range [0,256). If you haven't
+	figured it out already, these attributes are presented as the color (rgb
+	values) of the animal.
+      </li>
+      <li>
+	Animals can be happy, angry, fearful, or neutral. A happy animal has a
+	green border and moves toward the other animal that made it happy. An
+	angry animal has a red border and moves toward the other animal that
+	made it angry. A fearful animal has a blue border and moves away from
+	the other animal that scared it. A neutral animal has no border and
+	behaves normally.
+      </li>
+      <li>
+	Animals are only aware of other animals within 100px of them. If there
+	are multiple animals within that range, they only respond to the nearest
+	animal. If there are no other animals in that range, the animal remains
+	neutral and continues moving in its current direction.
+      </li>
+      <li>
+	Animals choose to like or dislike another animal based on the l2
+	similarity between them:<br>
+	<samp>
+	  &nbsp;&nbsp;&nbsp;&nbsp;Let a1 = the first animal<br>
+	  &nbsp;&nbsp;&nbsp;&nbsp;Let a2 = the second animal<br>
+	  &nbsp;&nbsp;&nbsp;&nbsp;similarity(a1, a2) = sqrt( (a1.r - a2.r)<sup>2</sup> + (a1.g - a2.g)<sup>2</sup> + (a1.b - a2.b)<sup>2</sup> )<br>
+	</samp>
+	As such, similarity() is symmetrical. The maximum value of
+	similarity(a1, a2) is 441.6729559300637. The minimum value is,
+	obviously, 0.
+      </li>
+      <li>
+	Each animal also has a tolerance range, between [50,100), and an
+	aggression level, in range [0, 1). If similarity(a1, a2) &lt;
+	a1.tolerance, a1 will like a2 and be happy. If similarity(a1, a2) &gt;
+	441.6729... - 2 * a1.tolerance, a1 will be angry if a1.aggression &gt;
+	0.5 or fearful if a1.aggression &lt; 0.5. 
+      </li>
+      <li>
+	If two animals a1 and a2 are touching, a1 is angry, and a1.aggression
+	&gt; a2.aggression, then a2 will die. Obviously this wouldn't happen in
+	a real social scenario, but this project is an extended metaphor about
+	zoo animals, and zoo animals kill each other, so here we are. What this
+	actually represents is a scenario in which an individual leaves a social
+	group due to conflict with another individual in that group.
+      </li>
+    </ul>
+    <h2>Observations</h2>
+    <p>
+      This section really isn't organized - it's just a collection of
+      observations I've made so far. Essentially, it's a series of the more
+      interesting (and somewhat obvious) consequences of this kind of animal
+      behavior:
+    </p>
+    <ul>
+      <li>
+	If there are three very similar animals clustered together, two will
+	always be closer together than the other, so that slightly further one
+	will get left out and quickly leave the cluster while the close two
+	continue to jitter and chase each other.
+      </li>
+      <li>
+	If you spam add a bunch of animals and wait long enough, you usually end
+	up with a large group of green-ish animals roughly grouped together near
+	an edge.
+      </li>
+    </ul>
+    <br><br><i>fin</i><br><br>
+    <p>
+      If you want your own zoo (for whatever inconceivable reason), just add the
+      following code to your HTML:<br>
+      <samp>
+	&nbsp;&nbsp;&nbsp;&nbsp;&lt;svg id="zoo"&gt;&lt;/svg&gt;<br>
+	&nbsp;&nbsp;&nbsp;&nbsp;&lt;script src="http://denise.li/projects/zoo/zoo.js"&gt;&lt;/script&gt;
+      </samp>
+    </p>
   </body>
 </html>
