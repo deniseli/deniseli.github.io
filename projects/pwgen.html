@@ -53,14 +53,21 @@
       git repo. To get pronunciations, I used
       <a href="http://www.speech.cs.cmu.edu/cgi-bin/cmudict">CMUDict</a>.
     </p>
+    <h3>100k "Words" to 60k Words</h3>
     <p>
       First, I filtered out the capitalized repeat words and words containing special characters from the list of top 100k words. This word list was likely generated using a tokenized (by space, but not by special character) corpus without capitalization preprocessing, so the after removing the repeats, the "common-ness" ordering is not quite correct. For example, "his" and "His" were both present near the top of the list. There also appears to be a fair number of anomalies in the sorting. That said, we don't depend on any delicate thresholds for "common-ness", so this is not too bad, although certainly nonideal. We're left with about 60,000 words that we can assume actually are words. However, many of these are still not very common.
     </p>
+    <h3>60k Words to 10k Common Words</h3>
     <p>
       According to
       <a href="http://www.economist.com/blogs/johnson/2013/05/vocabulary-size">The Economist</a>,
       the average native English speaking adult knows 20,000 - 35,000 words, 8 year olds know about 10,000, and 4 year olds know about 5,000. Since they gathered this data from their own users, we can probably assume the numbers are inflated. Further, those 20,000 words the adults typically know aren't all going to be exactly the top 20,000 words in the English language. Finally, we want to use words that are <i>easy</i> to remember, not just words users are mildly acquinted with, so we definitely want to use a lower bar than this data would suggest. Let's take the 8 year old count of 10,000.
     </p>
+    <h3>10k Common Words to 8k Unique Sounding Common Words</h3>
+    <p>
+      The last thing we need to do to our word list is remove homophones. I checked for repeat pronunciations in our 10,000 long list of words by binary searching CMUDict's list of pronunciations and removing the less common words of each repeated pronuniation. We were left with 8067 words.
+    </p>
+    <h3>Putting it all Together</h3>
     <p>
       Now, we need to consider the word lengths. Here is the distribution:
     </p>
@@ -68,7 +75,7 @@
       <img src="pwgen/word_lengths.png">
     </center>
     <p>
-      The naive solution put a length cap at 6. I can't guess why with much certainty - perhaps because when all passwords must be 6 words long, having too many long words would make the password unusably long? Our implementation will not have a fixed number of words per password, so we do not need to ensure all our words are short. How, then, do we decide how many words to use? We know we at least need to meet the recommended minimum password length, 12 characters. We also know that we want the password to be as long as the user is able to remember. I don't feel comfortable saying I know what that length is better than the user, so that part will be interactive.
+      The original solution put a length cap at 6, perhaps because when all passwords must be 6 words long, having too many long words would make the password unusably long. Our implementation will not have a fixed number of words per password, so we do not need to ensure all our words are short. How, then, do we decide how many words to use? We know we at least need to meet the recommended minimum password length, 12 characters. We also know that we want the password to be as long as the user is able to remember. I don't feel comfortable saying I know what that length is better than the user, so that part will be interactive.
     </p>
     <p>
       Oh - I almost forgot to mention the bonus feature: it's free! (as it should be - there isn't even CSS)
