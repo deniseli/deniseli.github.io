@@ -2,7 +2,9 @@ var MIN_LEN = 12;
 var BIG_NBSP = "&nbsp;&nbsp;&nbsp;&nbsp;";
 
 var addWord = function() {
-    this.pw.push(words[Math.floor(Math.random() * words.length)]);
+    var randArr = window.crypto.getRandomValues(new Uint16Array(1));
+    var randNum = randArr * words.length / Math.pow(2, 16);
+    this.pw.push(words[Math.floor(randNum)]);
 }
 
 var updateText = function() {
