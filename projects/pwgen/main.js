@@ -1,10 +1,19 @@
 var MIN_LEN = 12;
 var BIG_NBSP = "&nbsp;&nbsp;&nbsp;&nbsp;";
 
-var addWord = function() {
+var getRandNum = function() {
+    var isSafari = Object.prototype.toString.call(window.HTMLElement).indexOf('Constructor') > 0;
+    var isIE = /*@cc_on!@*/false || !!document.documentMode;
+    if (isSafari || isIE) {
+        // WARNING: Math.random() is not secure. Please use a real browser.
+        return Math.random() * words.length;
+    }
     var randArr = window.crypto.getRandomValues(new Uint16Array(1));
-    var randNum = randArr * words.length / Math.pow(2, 16);
-    this.pw.push(words[Math.floor(randNum)]);
+    return randArr * words.length / Math.pow(2, 16);
+}
+
+var addWord = function() {
+    this.pw.push(words[Math.floor(getRandNum())]);
 }
 
 var updateText = function() {
