@@ -5,7 +5,7 @@ var HAPPY = "lightgreen";
 var FEARFUL = "dodgerblue";
 var ANGRY = "red";
 
-var width = screen.width;
+var width = screen.width * 0.8;
 var height = 400;
 
 var animalDiam = 8;

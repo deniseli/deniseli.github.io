@@ -1,0 +1,89 @@
+@import url(http://db.onlinewebfonts.com/c/2019a9a001cfb8bbedd1813303eb71c6?family=NewslabW01-Medium);
+
+body {
+    margin: 12px 10%;
+    font-family: "Source Sans Pro", sans-serif;
+}
+
+h1, h2, h3 {
+    font-family: "NewslabW01-Medium", serif;
+    font-weight: 300;
+    margin-bottom: 0;
+}
+
+h3 {
+    margin: 6px 0px;
+}
+
+a {
+    color: teal;
+    text-decoration: none;
+}
+
+button {
+    font-family: "Source Sans Pro", sans-serif;
+    font-size: 14;
+    color: teal;
+    margin: 6px;
+}
+
+ol, ul {
+    margin: 0;
+}
+
+div#header {
+    margin-bottom: 36px;
+}
+
+div#about {
+    display: inline-block;
+}
+
+div.inline-subsection {
+    display: inline;
+    float: left;
+    margin-right: 24px;
+}
+
+div.horiz-flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+div.horiz-flex h1, div.horiz-flex h2, div.horiz-flex h3 {
+    margin: 0;
+    vertical-align: bottom;
+}
+
+div.icon-nav {
+    font-size: 28;
+}
+
+h2.section-header {
+    border-top-style: dashed;
+    border-top-width: 1px;
+    padding-top: 12px;
+}
+
+div.section {
+    display: block;
+    padding: 12px;
+    margin-bottom: 24px;
+}
+
+div.section div.subsection {
+    margin: 12px 0px;
+}
+
+div.flex-subsection {
+    margin-right: 12px;
+}
+
+
+@font-face {font-family: "NewslabW01-Medium";
+    src: url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.eot");
+    src: url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.eot?#iefix") format("embedded-opentype"),
+    url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.woff") format("woff"),
+    url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.ttf") format("truetype"),
+    url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.svg#NewslabW01-Medium") format("svg");
+}
