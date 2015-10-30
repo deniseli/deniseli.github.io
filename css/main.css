@@ -33,6 +33,7 @@ ol, ul {
 
 div#header {
     margin-bottom: 36px;
+    padding: 0 0 36 0;
 }
 
 div#about {
@@ -55,8 +56,10 @@ div.horiz-flex h1, div.horiz-flex h2, div.horiz-flex h3 {
     vertical-align: bottom;
 }
 
-div.icon-nav {
+div#icon-nav {
     font-size: 28;
+    float: right;
+    margin-right: 0;
 }
 
 h2.section-header {
