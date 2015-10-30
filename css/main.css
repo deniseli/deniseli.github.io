@@ -40,6 +40,10 @@ div#about {
     display: inline-block;
 }
 
+div.adj-right {
+    margin-right: 0px !important;
+}
+
 div.inline-subsection {
     display: inline;
     float: left;
