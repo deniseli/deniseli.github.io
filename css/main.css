@@ -51,13 +51,6 @@ div.horiz-flex {
     justify-content: space-between;
 }
 
-@media screen and (min-color-index:0) and(-webkit-min-device-pixel-ratio:0) { @media
-{
-    div.horiz-flex {
-        padding-bottom: 24px;
-    }
-}}
-
 div.horiz-flex h1, div.horiz-flex h2, div.horiz-flex h3 {
     margin: 0;
     vertical-align: bottom;
@@ -65,11 +58,6 @@ div.horiz-flex h1, div.horiz-flex h2, div.horiz-flex h3 {
 
 div#icon-nav {
     font-size: 28;
-    float: right;
-    margin-right: 0;
-}
-
-div.adj-right {
     float: right;
     margin-right: 0;
 }
