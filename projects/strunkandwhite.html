@@ -1,0 +1,227 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Projects: English Style Linter</title>
+    <link href="../css/main.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <h1>English Style Linter</h1>
+    <p>
+      <a href="https://github.com/deniseli/StrunkAndWhiteLinter">Link to code</a>
+    </p>
+
+    <p>
+      The purpose of this project is to build a linter that checks a writing
+      sample's compliance with the guidelines in
+      <a href="https://en.wikipedia.org/wiki/The_Elements_of_Style">
+        Strunk and White's <i>Elements of Style</i></a>.
+      It also compares a number of metrics calculated on the input text with
+      ranges of acceptable values, generated from a list of classics. It is
+      implemented as a <a href="https://nodejs.org/en/">node</a> webapp.
+    </p>
+    <p>
+      This project is also incomplete. While the core frameworks are all in
+      place, there are still many independent rules to be implemented. This
+      project also contains a context-free grammar parser, which currently
+      uses a very weak set of rules. This needs to be improved over time to
+      accomodate many of the remaining style guidelines.
+    </p>
+
+    <h2>Logic Overview</h2>
+    <p>
+      There are 3 primary categories of checks in this linter:
+    </p>
+    <p>
+      <ol>
+        <li>
+          <b>Context Free Checks</b><br>
+          Validate a single word token. (e.g. error saying "house-boat" should be "houseboat")
+        </li>
+        <li>
+          <b>Context Dependent Checks</b><br>
+          Validate a sequence of word tokens (e.g. error saying 10/10/15 should be written as December 10, 2015)
+        </li>
+        <li>
+          <b>Overall Metrics</b><br>
+          Quantitative metrics used to compare overall style of the input text with examples of "good" writing.
+        </li>
+      </ol>
+    </p>
+    <p>
+      These checks do not exist to say, definitively, that the error-tagged word is bad or wrong. Instead, they serve as <i>guidelines</i> for generally good writing. There are many exceptions to every rule. In fact, it would be fair to say the best writing <i>should</i> trigger at least a few of these errors. In E.B. White's own words:
+    </p>
+    <div class="quote-block">
+      <p><i>&ldquo;
+          Style rules of this sort are, of course, somewhat a matter of individual preference, and even the established rules of grammar are open to challenge. Professor Strunk, although one of the most inflexible and choosy of men, was quick to acknowledge the fallacy of inflexibility and the danger of doctrine.
+          &rdquo;</i></p>
+      <p class="attribution">
+        &mdash; E.B. White, <i>The Elements of Style</i>
+      </p>
+    </div>
+    <p>
+      That said, it is still prudent to regard each warning carefully.
+    </p>
+    <div class="quote-block">
+      <p><i>&ldquo;
+          It is an old observation that the best writers sometimes disregard the rules of rhetoric. When they do so, however, the reader will usually find in the sentence some compensating merit, attained at the cost of the violation. Unless he is certain of doing as well, he will probably do best to follow the rules.
+          &rdquo;</i></p>
+      <p class="attribution">
+        &mdash; William Strunk Jr., <i>The Elements of Style</i>
+      </p>
+    </div>
+
+    <h2>Standards for Acceptable Metric Values</h2>
+    <p>
+      We determine the acceptable range of values for each metric using those
+      values drawn from the following list of 9 "good" texts. These are texts
+      generally accepted to be strong writing:
+    </p>
+    <ul>
+      <li>Jonathan Swift - <i>A Modest Proposal</i> (1729)</li>
+      <li>Emily Bronte - <i>Wuthering Heights</i> (1847)</li>
+      <li>Charles Dickens - <i>A Tale of Two Cities</i> (1859)</li>
+      <li>Mark Twain - <i>Huckleberry Finn</i> (1884)</li>
+      <li>Jack London - <i>The Call of the Wild</i> (1903)</li>
+      <li>F. Scott Fitzgerald - <i>The Great Gatsby</i> (1925)</li>
+      <li>J.R.R. Tolkien - <i>The Hobbit</i> (1937)</li>
+      <li>E.B. White - <i>Charlotte's Web</i> (1952)</li>
+      <li>Chuck Palahniuk - <i>Fight Club</i> (1996)</li>
+    </ul>
+    <p>
+      This list was not generated using any specific formula. Rather, it was
+      softly determined with the goal of covering a relatively wide range of
+      good writing. I did, however, take care to include <i>Charlotte's Web</i>,
+      so as to have a sample of E.B. White's own writing in the acceptable corpus.
+    </p>
+
+    <h2>Current Checks and Metrics</h2>
+
+    <h3>Context Free Checks</h3>
+    <p>
+      These are the context free checks that I have implemented as of the first iteration of this project:
+    </p>
+    <p>
+      <ol>
+        <li>
+          <b>Exclamations</b><br>
+          All exclamation points are labeled with the error: "Do not attempt to emphasize simple statements
+          by using a mark of exclamation. The exclamation mark is to be reserved for use after true exclamations or commands."
+        </li>
+        <li>
+          <b>In-Word Dashes</b><br>
+          Whenever a word contains a dash, the validator checks if removing the dash leaves behind an intact word. If so, it is
+          labeled with the error: "Do not use a hyphen between words that can be better written as one word."
+        </li>
+        <li>
+          <b>Parenthesis</b><br>
+          If a word token is either a left or right parenthesis, it is labeled with the error: "Enclose parenthetic expressions between commas."
+        </li>
+        <li>
+          <b>First Person</b><br>
+          Formal writing is generally advised to be in the 3rd person, so any first person pronoun will be labeled with the error:
+          "Do not use the first person in formal writing."
+        </li>
+      </ol>
+    </p>
+
+    <h3>Context Dependent Checks</h3>
+    <p>
+      These are the context dependent checks that I have implemented as of the first iteration of this project:
+    </p>
+    <p>
+      <ol>
+        <li>
+          <b>Singular Possessive</b><br>
+          If a noun is followed by an apostrophe but not an "s" afterwards, it is labeled with the error: "Form the possessive singular of nouns by adding 's."
+        </li>
+        <li>
+          <b>"As _ or _ than"</b><br>
+          The validator finds sequences containing the pattern "as x or y than", where x and y are adjectives, and labels "as" with the error:
+          Expressions of this type should be corrected by rearranging the sentences. e.g.
+          "My opinion is as good or better than his." -> "My opinion is as good as his, if not better."
+        </li>
+        <li>
+          <b>"As to whether"</b><br>
+          The "as" in these expressions is labeled with the error: "Do not use "as to whether". "Whether" is sufficient".
+        </li>
+        <li>
+          <b>"As yet"</b><br>
+          The "as" in these expressions is labeled with the error: "Do not use "as yet". "Yet" nearly always is as good, if not better".
+        </li>
+        <li>
+          <b>Oxford Comma</b><br>
+          The oxford comma check searches for the pattern &lt;X> &lt;COMMA> &lt;X> &lt;CC> &lt;X> where:
+          <ul>
+            <li>&lt;L> denotes a slice of a sentence that has been labeled L in its parse tree</li>
+            <li>CC is a coordinating conjunction</li>
+            <li>X is in the CFGParser's label space</li>
+          </ul>
+          If the pattern is found, the coordinating conjunction is labeled with the error: "In a series of three or more terms with a single conjunction, use a comma after each term except the last."
+        </li>
+        <li>
+          <b>Date Format</b><br>
+          This check ensures dates are in the format Month DD/D, YYYY or DD/D Month YYYY, but never MM/DD/YY, MM/DD/YYYY, DD/MM/YY, or DD/MM/YYYY. Incorrectly formatted dates are labeled with the error: "You should write dates as 'January 1, 2000' or '1 January 2000'."
+        </li>
+        <li>
+          <b>Omit Needless Words</b><br>
+          This check looks for phrases that contain oftseen unneccessary words. It labels these phrases with error: "Vigorous writing is concise. Omit needless words by replacing &lt;bad phrase> with &lt;good phrase>." Though the "as to whether" and "as yet" checks logically fit here, they have been segregated to preserve the structure of the rules as listed in <i>The Elements of Style</i>.
+        </li>
+        <li>
+          <b>Loose Sentences</b><br>
+          This check finds loose sentences consisting of two clauses, the second introduced by a conjunction or a relative. If three or more of these sentences occur in a row, the first word of each sentence is labeled with the error: "Avoid a succession of loose sentences."
+        </li>
+      </ol>
+    </p>
+
+    <h3>Overall Metrics</h3>
+    <p>
+      These are the corpus-wide metrics that I have implemented as of the first iteration of this project:
+    </p>
+    <p>
+      <ol>
+        <li>
+          <b>Exclamations</b><br>
+          The percentage of sentence terminators that are exclamation points.
+        </li>
+        <li>
+          <b>Average Paragraph Length</b><br>
+          The average paragraph length in the corpus, including dialog.
+        </li>
+      </ol>
+    </p>
+
+    <h2>Implementation Details</h2>
+
+    <h3>Organization</h3>
+    <p>
+      Upon inputing a sample of text and clicking "Go", the linter creates an instance of <b>InputCorpus</b>, which performs two calculations on the raw text. First, it stores a part-of-speech tagged copy of the text. Then, it generates the context-free grammar parse trees for each sentence using the CKY algorithm. CKY is implemented in <b>CFGParser</b> and its rules (in Chomsky Normal Form) are given in <b>CFGRules</b>.
+    </p>
+    <p>
+      This <b>InputCorpus</b> instance is passed to a new <b>Validator</b>, which runs all the checks and metric calculations. Those functions are stored in <b>ContextFreeChecks</b>, <b>ContextDepChecks</b>, and <b>Metrics</b>, respectively.
+    </p>
+    <p>
+      Finally, <b>CorpusViewer</b> is used to render the contents of the validated <b>InputCorpus</b>. In addition to rendering the input corpus and errors, <b>CorpusViewer</b> draws plots (with a toggle to switch between box-and-whisker to 1-d scatter) relating the metrics of the input corpus to the values extracted from the "good" texts. These distributions (and their normalizations) are calculated in <b>BookMetricDistributions</b>, which pulls the cached metric values of each book from the <b>BookMetrics</b> constants file.
+    </p>
+
+    <h3>Node Modules</h3>
+    <p>
+      For testing:
+      <a href="https://www.npmjs.com/package/chai">chai</a>,
+      <a href="https://www.npmjs.com/package/sinon">sinon</a>, and
+      <a href="https://www.npmjs.com/package/mocha">mocha</a>.
+    </p>
+    <p>
+      For UI:
+      <a href="https://www.npmjs.com/package/jquery">jquery</a> and
+      <a href="https://www.npmjs.com/package/d3plus">d3plus</a>.
+    </p>
+    <p>
+      For NLP:
+      <a href="https://www.npmjs.com/package/pos">pos</a>.
+    </p>
+    <p>
+      Additional toolage:
+      <a href="https://www.npmjs.com/package/browserify">browserify</a>.
+    </p>
+  </body>
+</html>
