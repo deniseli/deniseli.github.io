@@ -3,16 +3,32 @@
 body {
     margin: 12px 10%;
     font-family: "Source Sans Pro", sans-serif;
+    font-weight: 300;
+    color: rgb(67,67,67);
+    line-spacing: 1.25;
+    background-color: #faf8f6;
+}
+
+body.index {
+    background-color: #ffffff;
 }
 
 h1, h2, h3 {
     font-family: "NewslabW01-Medium", serif;
     font-weight: 300;
+}
+
+body.index h1, h2, h3 {
     margin-bottom: 0;
 }
 
 h3 {
     margin: 6px 0px;
+}
+
+b {
+    font-weight: 500;
+    color: #000000;
 }
 
 a {
@@ -84,6 +100,22 @@ div.section div.subsection {
 
 div.flex-subsection {
     margin-right: 12px;
+}
+
+div.quote-block {
+    margin: 30px 10%;
+}
+
+div.quote-block .attribution {
+    text-align: right;
+}
+
+li {
+    margin-bottom: 6px;
+}
+
+li li {
+    margin-bottom: 3px;
 }
 
 
