@@ -1,5 +1,3 @@
-@import url(http://db.onlinewebfonts.com/c/2019a9a001cfb8bbedd1813303eb71c6?family=NewslabW01-Medium);
-
 body {
     margin: 12px 10%;
     font-family: "Source Sans Pro", sans-serif;
@@ -14,8 +12,7 @@ body.index {
 }
 
 h1, h2, h3 {
-    font-family: "NewslabW01-Medium", serif;
-    font-weight: 300;
+    font-family: "Newslab", serif;
 }
 
 body.index h1, h2, h3 {
@@ -119,10 +116,11 @@ li li {
 }
 
 
-@font-face {font-family: "NewslabW01-Medium";
-    src: url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.eot");
-    src: url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.eot?#iefix") format("embedded-opentype"),
-    url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.woff") format("woff"),
-    url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.ttf") format("truetype"),
-    url("http://db.onlinewebfonts.com/t/2019a9a001cfb8bbedd1813303eb71c6.svg#NewslabW01-Medium") format("svg");
+@font-face {font-family: "Newslab";
+    src: url("../fonts/newslabbook-webfont.eot");
+    src: url("../fonts/newslabbook-webfont.eot?#iefix") format("embedded-opentype"),
+    url("../fonts/newslabbook-webfont.woff2") format("woff2"),
+    url("../fonts/newslabbook-webfont.woff") format("woff"),
+    url("../fonts/newslabbook-webfont.ttf") format("truetype"),
+    url("../fonts/newslabbook-webfont.svg#newslab_bookbook") format("svg");
 }
