@@ -35,7 +35,7 @@
       <ol>
         <li>
           <b>Word Match Checks</b><br>
-          Validate a single word token by looking for matches in a trie-style modified DFA.
+          Validate a single word token by looking for matches in a trie-style modified Deterministic Finite State Automata (DFA). This structure makes all the matching checks, the most common type of context free check, to run in O(word length) rather than O(count words that trigger errors, a.k.a. "key words"). Since we expect the number of key words to be significantly higher than the lengths of words run through the DFA, this should provide a significant speedup.
         </li>
         <li>
           <b>Context Free Checks</b><br>
