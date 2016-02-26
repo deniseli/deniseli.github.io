@@ -27,7 +27,7 @@
       accomodate many of the remaining style guidelines.
     </p>
 
-    <h2>Logic Overview</h2>
+    <h2 id="logic-overview">Logic Overview</h2>
     <p>
       There are 4 primary categories of checks in this linter:
     </p>
@@ -74,7 +74,7 @@
       </p>
     </div>
 
-    <h2>Standards for Acceptable Metric Values</h2>
+    <h2 id="standards">Standards for Acceptable Metric Values</h2>
     <p>
       We determine the acceptable range of values for each metric using those
       values drawn from the following list of 9 "good" texts. These are texts
@@ -98,7 +98,7 @@
       so as to have a sample of E.B. White's own writing in the acceptable corpus.
     </p>
 
-    <h2>Current Checks and Metrics</h2>
+    <h2 id="current-functions">Current Checks and Metrics</h2>
 
     <h3>Word Match Checks</h3>
     <p>
@@ -194,28 +194,31 @@
       </ol>
     </p>
 
-    <h2>Implementation Details</h2>
+    <h2 id="implementation">Implementation Details</h2>
 
     <h3>Organization</h3>
     <p>
       Upon inputing a sample of text and clicking "Go", the linter creates an instance of <b>InputCorpus</b>, which performs two calculations on the raw text. First, it stores a part-of-speech tagged copy of the text. Then, it generates the context-free grammar parse trees for each sentence using the CKY algorithm. CKY is implemented in <b>CFGParser</b> and its rules (in Chomsky Normal Form) are given in <b>CFGRules</b>.
     </p>
     <p>
-      This <b>InputCorpus</b> instance is passed to a new <b>Validator</b>, which runs all the checks and metric calculations. <b>ContextFreeChecks</b>, <b>ContextDepChecks</b>, and <b>Metrics</b> hold their respective lists of checks and metrics. <b>WordMatchChecks</b> is an implementation of MDFA, a modified DFA such that:
+      This <b>InputCorpus</b> instance is passed to a new <b>Validator</b>, which runs all the checks and metric calculations. <b>ContextFreeChecks</b>, <b>ContextDepChecks</b>, and <b>Metrics</b> hold their respective lists of checks and metrics. <b>WordMatchChecks</b> is an implementation of <b>MDFA</b>, a modified DFA such that:
     </p>
     <p>
       <ol>
         <li>
-          Sigma is not strictly defined...
+          The transition function &delta; is trie-like, so &delta;(q<sub>i</sub>, w.charAt(i)) = q<sub>i+1</sub> where w in &Sigma;*.
         </li>
         <li>
-          ... because any undefined transitions are directed to a generic, simulated reject state at runtime.
+          The input alphabet &Sigma; is not strictly defined...
         </li>
         <li>
-          Transition characters are case insensitive.
+          ... because any undefined transitions are directed to a generic, simulated reject state R at runtime, such that (&forall;x in &Sigma;. &delta;(R, x) = R).
         </li>
         <li>
-          Rather than simply accepting or rejecting a string, this MDFA returns a list of errors on acceptance.
+          Transitions are case insensitive. Consequently, state names (given by the sequence of input characters that reaches them) are also case insensitively matched.
+        </li>
+        <li>
+          Returns a list of validation errors on acceptance, where acceptance means matching the input word to one on the list of words that trigger validation errors.
         </li>
       </ol>
     </p>
