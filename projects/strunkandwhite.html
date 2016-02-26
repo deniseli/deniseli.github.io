@@ -34,12 +34,16 @@
     <p>
       <ol>
         <li>
+          <b>Word Match Checks</b><br>
+          Validate a single word token by looking for matches in a trie-style modified DFA.
+        </li>
+        <li>
           <b>Context Free Checks</b><br>
-          Validate a single word token. (e.g. error saying "house-boat" should be "houseboat")
+          Validate a single word token by operating on the token. This type of check provides access to the word's part-of-speech and allows for complex operations on the word string. (e.g. error saying "house-boat" should be "houseboat")
         </li>
         <li>
           <b>Context Dependent Checks</b><br>
-          Validate a sequence of word tokens (e.g. error saying 10/10/15 should be written as December 10, 2015)
+          Validate a sequence of word tokens. This type of check provides access to everything context free checks have, as well as the parsed grammar tree of the sentence. (e.g. error saying 10/10/15 should be written as December 10, 2015)
         </li>
         <li>
           <b>Overall Metrics</b><br>
@@ -96,21 +100,13 @@
 
     <h2>Current Checks and Metrics</h2>
 
-    <h3>Context Free Checks</h3>
-    <p>
-      These are the context free checks that I have implemented as of the first iteration of this project:
-    </p>
+    <h3>Word Match Checks</h3>
     <p>
       <ol>
         <li>
           <b>Exclamations</b><br>
           All exclamation points are labeled with the error: "Do not attempt to emphasize simple statements
           by using a mark of exclamation. The exclamation mark is to be reserved for use after true exclamations or commands."
-        </li>
-        <li>
-          <b>In-Word Dashes</b><br>
-          Whenever a word contains a dash, the validator checks if removing the dash leaves behind an intact word. If so, it is
-          labeled with the error: "Do not use a hyphen between words that can be better written as one word."
         </li>
         <li>
           <b>Parenthesis</b><br>
@@ -124,10 +120,18 @@
       </ol>
     </p>
 
-    <h3>Context Dependent Checks</h3>
+    <h3>Context Free Checks</h3>
     <p>
-      These are the context dependent checks that I have implemented as of the first iteration of this project:
+      <ol>
+        <li>
+          <b>In-Word Dashes</b><br>
+          Whenever a word contains a dash, the validator checks if removing the dash leaves behind an intact word. If so, it is
+          labeled with the error: "Do not use a hyphen between words that can be better written as one word."
+        </li>
+      </ol>
     </p>
+
+    <h3>Context Dependent Checks</h3>
     <p>
       <ol>
         <li>
@@ -197,7 +201,23 @@
       Upon inputing a sample of text and clicking "Go", the linter creates an instance of <b>InputCorpus</b>, which performs two calculations on the raw text. First, it stores a part-of-speech tagged copy of the text. Then, it generates the context-free grammar parse trees for each sentence using the CKY algorithm. CKY is implemented in <b>CFGParser</b> and its rules (in Chomsky Normal Form) are given in <b>CFGRules</b>.
     </p>
     <p>
-      This <b>InputCorpus</b> instance is passed to a new <b>Validator</b>, which runs all the checks and metric calculations. Those functions are stored in <b>ContextFreeChecks</b>, <b>ContextDepChecks</b>, and <b>Metrics</b>, respectively.
+      This <b>InputCorpus</b> instance is passed to a new <b>Validator</b>, which runs all the checks and metric calculations. <b>ContextFreeChecks</b>, <b>ContextDepChecks</b>, and <b>Metrics</b> hold their respective lists of checks and metrics. <b>WordMatchChecks</b> is an implementation of MDFA, a modified DFA such that:
+    </p>
+    <p>
+      <ol>
+        <li>
+          Sigma is not strictly defined...
+        </li>
+        <li>
+          ... because any undefined transitions are directed to a generic, simulated reject state at runtime.
+        </li>
+        <li>
+          Transition characters are case insensitive.
+        </li>
+        <li>
+          Rather than simply accepting or rejecting a string, this MDFA returns a list of errors on acceptance.
+        </li>
+      </ol>
     </p>
     <p>
       Finally, <b>CorpusViewer</b> is used to render the contents of the validated <b>InputCorpus</b>. In addition to rendering the input corpus and errors, <b>CorpusViewer</b> draws plots (with a toggle to switch between box-and-whisker to 1-d scatter) relating the metrics of the input corpus to the values extracted from the "good" texts. These distributions (and their normalizations) are calculated in <b>BookMetricDistributions</b>, which pulls the cached metric values of each book from the <b>BookMetrics</b> constants file.
