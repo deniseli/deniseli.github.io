@@ -45,7 +45,7 @@
         <li>The center pixel, [N/2,N/2], is an edge.</li>
         <li>Edge pixels span either the horizontal or vertical axis (or both). We define spanning an axis X as having edge pixels on either side (relative to X) of the center pixel.</li>
       </ol>
-      If those things are true, then we calculate the linear regression line for all the edge pixels of the image segment. We drop the y-intercept and use only the slope, because we are readjusting our line to go through the center pixel of the image segment. These slopes are cached (using the image segment as a key) so we never need to do the calculation more than O(2^N^2) times.
+      If those things are true, then we calculate the linear regression line for all the edge pixels of the image segment. (Aside: One weakness of this technique is that perfectly vertical lines cannot be captured. A solution could be to calculate a line for each image segment's transpose and `&` it with the other line) We drop the y-intercept and use only the slope, because we are readjusting our line to go through the center pixel of the image segment. These slopes are cached (using the image segment as a key) so we never need to do the calculation more than O(2^N^2) times.
     </p>
     <p>
       Finally, we draw our line on the canvas that will eventually be our output image. As mentioned above, we draw a line with the calculated slope through the center of the image segment. The length of the line is given by (roughly) N^2.
@@ -619,5 +619,432 @@
       </table>
     </center>
     <br>
+
+    <p>
+      Below we have the output of applying this filter witih a variety of parameters to this image of a tree:<br>
+    </p>
+    <center><img height="50%" src="lineart_imgs/tree.png"></img></center>
+    <h3>Sparse</h3>
+    <center>
+      <table>
+        <tr>
+          <th></th>
+          <th>Sigma = 1</th>
+          <th>Sigma = 2</th>
+          <th>Sigma = 3</th>
+          <th>Sigma = 4</th>
+          <th>Sigma = 5</th>
+        </tr>
+        <tr>
+          <th>N=3</th>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S5S.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=5</th>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S5S.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=7</th>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S5S.png"></img>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
+    <h3>Dense</h3>
+    <center>
+      <table>
+        <tr>
+          <th></th>
+          <th>Sigma = 1</th>
+          <th>Sigma = 2</th>
+          <th>Sigma = 3</th>
+          <th>Sigma = 4</th>
+          <th>Sigma = 5</th>
+        </tr>
+        <tr>
+          <th>N=3</th>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N3S5D.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=5</th>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N5S5D.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=7</th>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/tree_N7S5D.png"></img>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
+    <p>
+      Below we have the output of applying this filter witih a variety of parameters to this image of a fox:<br>
+    </p>
+    <center><img height="50%" src="lineart_imgs/fox.png"></img></center>
+    <h3>Sparse</h3>
+    <center>
+      <table>
+        <tr>
+          <th></th>
+          <th>Sigma = 1</th>
+          <th>Sigma = 2</th>
+          <th>Sigma = 3</th>
+          <th>Sigma = 4</th>
+          <th>Sigma = 5</th>
+        </tr>
+        <tr>
+          <th>N=3</th>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S5S.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=5</th>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S5S.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=7</th>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S5S.png"></img>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
+    <h3>Dense</h3>
+    <center>
+      <table>
+        <tr>
+          <th></th>
+          <th>Sigma = 1</th>
+          <th>Sigma = 2</th>
+          <th>Sigma = 3</th>
+          <th>Sigma = 4</th>
+          <th>Sigma = 5</th>
+        </tr>
+        <tr>
+          <th>N=3</th>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N3S5D.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=5</th>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N5S5D.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=7</th>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/fox_N7S5D.png"></img>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
+    <p>
+      Below we have the output of applying this filter witih a variety of parameters to this image:<br>
+    </p>
+    <center><img height="50%" src="lineart_imgs/swirls.png"></img></center>
+    <h3>Sparse</h3>
+    <center>
+      <table>
+        <tr>
+          <th></th>
+          <th>Sigma = 1</th>
+          <th>Sigma = 2</th>
+          <th>Sigma = 3</th>
+          <th>Sigma = 4</th>
+          <th>Sigma = 5</th>
+        </tr>
+        <tr>
+          <th>N=3</th>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S5S.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=5</th>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S5S.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=7</th>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S5S.png"></img>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
+    <h3>Dense</h3>
+    <center>
+      <table>
+        <tr>
+          <th></th>
+          <th>Sigma = 1</th>
+          <th>Sigma = 2</th>
+          <th>Sigma = 3</th>
+          <th>Sigma = 4</th>
+          <th>Sigma = 5</th>
+        </tr>
+        <tr>
+          <th>N=3</th>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N3S5D.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=5</th>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N5S5D.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=7</th>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/swirls_N7S5D.png"></img>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
   </body>
 </html>
