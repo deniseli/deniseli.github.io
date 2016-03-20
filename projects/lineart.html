@@ -1046,5 +1046,159 @@
     </center>
     <br>
 
+    <p>
+      Below we have the output of applying this filter witih a variety of parameters to this image. This set is a good demonstration of the weaknesses of the linear regression method:
+      <ol>
+        <li>
+          We cannot have perfectly vertical lines.
+        </li>
+        <li>
+          We cannot guarantee preservation of density of lines, since image segments that would best be represented with multiple lines will always be represented with a single one.
+        </li>
+        <li>
+          We cannot preserve curved lines. This is arguably an intended feature, since it adds to the "sketchy" effect when applied to organic images. However, as seen below, this is non-ideal in cases where precision and whitespace matter.
+        </li>
+      </ol>
+      <br>
+    </p>
+    <center><img height="50%" src="lineart_imgs/cube.png"></img></center>
+    <h3>Sparse</h3>
+    <center>
+      <table>
+        <tr>
+          <th></th>
+          <th>Sigma = 1</th>
+          <th>Sigma = 2</th>
+          <th>Sigma = 3</th>
+          <th>Sigma = 4</th>
+          <th>Sigma = 5</th>
+        </tr>
+        <tr>
+          <th>N=3</th>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S5S.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=5</th>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S5S.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=7</th>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S1S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S2S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S3S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S4S.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S5S.png"></img>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
+    <h3>Dense</h3>
+    <center>
+      <table>
+        <tr>
+          <th></th>
+          <th>Sigma = 1</th>
+          <th>Sigma = 2</th>
+          <th>Sigma = 3</th>
+          <th>Sigma = 4</th>
+          <th>Sigma = 5</th>
+        </tr>
+        <tr>
+          <th>N=3</th>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N3S5D.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=5</th>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N5S5D.png"></img>
+          </td>
+        </tr>
+        <tr>
+          <th>N=7</th>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S1D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S2D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S3D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S4D.png"></img>
+          </td>
+          <td>
+            <img width="100%" src="lineart_imgs/cube_N7S5D.png"></img>
+          </td>
+        </tr>
+      </table>
+    </center>
+    <br>
+
   </body>
 </html>
