@@ -17,7 +17,7 @@
     <h2>Problem Definition</h2>
     <p>
       This isn't really the sphere packing problem in the pure, mathematical sense. The
-      actual sphere packing problem aims to find an optimal solution, aiming to fill a
+      actual sphere packing problem aims to find an optimal solution, filling a
       region with the greatest number of spheres of some size possible. Instead, we only
       want to make a patch of circles that is relatively dense in the middle and decreases
       in density as you approach the edge, while avoiding the areas blocked by an image
@@ -39,9 +39,24 @@
       &nbsp; &nbsp; &nbsp; &nbsp; If i collides with j, mark i and j as dead<br>
       &nbsp; &nbsp; If newc is dead, remove it from circles<br>
       &nbsp; &nbsp; For each circle c in circles<br>
-      &nbsp; &nbsp; &nbsp; &nbsp; If c is alive and growing by const x does not touch block_mask<br>
+      &nbsp; &nbsp; &nbsp; &nbsp; If c is dead<br>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; continue<br>
+      &nbsp; &nbsp; &nbsp; &nbsp; If c's radius exceeds max_radius<br>
+      &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Mark c as dead.<br>
+      &nbsp; &nbsp; &nbsp; &nbsp; If growing by const x does not touch block_mask<br>
       &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Grow c's radius by x<br>
-    </samp>
+                        </samp>
+    <p>
+      To make the patch centrally dense, we take the following two measures:
+      <ol>
+        <li>
+          Pull locations for newc from a 2d normal distribution aligned with the image
+        </li>
+        <li>
+          Vary max_radius by distance from the center of the patch (decreasing as you approach the edge)
+        </li>
+      </ol>
+    </p>
     <p>
       Without further ado, some results:
     </p>
