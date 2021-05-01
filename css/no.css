@@ -103,7 +103,13 @@ table.mental-model-intro {
 table.mental-model-intro td {
     padding: 16px;
     width: 50%;
+}
+table.mental-model-intro .text-row td {
     vertical-align: top;
+}
+table.mental-model-intro .icon-row td {
+    vertical-align: middle;
+    white-space: nowrap;
 }
 
 table.mental-model-intro p.detail {
@@ -167,7 +173,8 @@ div.mental-model-timeline {
     padding: 8px 32px;
 }
 .mental-model-arrows {
-    width: 504px;
+    width: 83%;
+    max-width: 504px;
     font-size: 3em;
     color: teal;
     position: absolute;
