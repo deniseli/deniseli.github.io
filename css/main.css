@@ -1,9 +1,9 @@
-body {
+body, table {
     margin: 12px 10%;
     font-family: "Source Sans Pro", sans-serif;
     font-weight: 300;
     color: rgb(67,67,67);
-    line-spacing: 1.25;
+    line-height: 21px;;
     background-color: #faf8f6;
 }
 

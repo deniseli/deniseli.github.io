@@ -1,0 +1,251 @@
+div.no-why-block {
+    margin-top: 32px;
+    margin-bottom: 32px;
+
+    margin-left: 16px;
+    border-left: 4px solid teal;
+    padding-left: 16px;
+
+    padding-top: 8px;
+    padding-bottom: 32px;
+
+    display: table;
+}
+div.no-why-block.grey {
+    border-left: 4px solid grey;
+    color: grey;
+}
+div.no-why-block .fa-caret-up {
+    font-size: 3em;
+    color: teal;
+    position: absolute;
+    margin-left: -33px;
+    margin-top: -36px;
+}
+div.no-why-block.grey .fa-caret-up {
+    color: grey;
+}
+div.no-why-block .fa-caret-down {
+    font-size: 3em;
+    color: teal;
+    position: absolute;
+    margin-left: -33px;
+    margin-top: 84px;
+}
+div.no-why-block.grey .fa-caret-down {
+    color: grey;
+}
+
+div.no-why-li {
+    border-radius: 8px;
+    border: 1px solid #bbb;
+    padding: 16px 0;
+    height: max-content;
+    background: white;
+    position: relative;
+}
+div.no-why-li + div.no-why-li {
+    margin-top: 16px;
+}
+
+.no-why-li-member {
+    display: table-cell;
+    vertical-align: middle;
+}
+i.no-why-li-member {
+    font-size: 2em;
+    padding: 0 24px;
+    color: teal;
+}
+div.no-why-block.grey i.no-why-li-member {
+    color: grey;
+}
+div.no-why-li-member {
+    padding-right: 32px;
+}
+
+div.no-why-li-member p {
+    margin-top: 8px;
+    margin-bottom: 0px;
+}
+
+div.no-why-li .stacked {
+    width: calc(80% - 160px);
+    border: none;
+    border-radius: 8px;
+    background: #eefff0;
+    padding: 10px;
+    font-size: 12px;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    height: calc(100% - 20px);
+    overflow: scroll;
+}
+
+div.quote .fa-quote-left {
+    float: left;
+    color: grey;
+}
+div.quote p {
+    margin: 0px 32px -16px 32px;
+}
+div.quote .fa-quote-right {
+    float: right;
+    color: grey;
+}
+
+table.mental-model-intro {
+    text-align: center;
+    width: 75%;
+}
+
+table.mental-model-intro td {
+    padding: 16px;
+    width: 50%;
+    vertical-align: top;
+}
+
+table.mental-model-intro p.detail {
+    font-size: 11px;
+}
+
+table.mental-model-intro .fa-money-bill-alt {
+    font-size: 1.25em;
+    color: teal;
+}
+
+table.mental-model-tasks {
+    table-layout: fixed;
+    width: 640px;
+}
+table.mental-model-tasks td {
+    padding: 16px;
+    width: 25%;
+}
+
+table.mental-model-tasks td.label {
+    text-align: right;
+}
+table.mental-model-tasks td.task {
+    background: white;
+    position: relative;
+}
+table.mental-model-tasks td.red-task {
+    background: #ffdddd;
+}
+table.mental-model-tasks td.yellow-task {
+    background: #ffffdd;
+    position: relative;
+}
+
+table.mental-model-tasks .cost {
+    margin-top: 8px;
+    color: teal;
+    border: 1px solid teal;
+    border-radius: 16px;
+    padding: 2px 8px;
+
+    position: absolute;
+    bottom: 8;
+    right: 8;
+
+    background-color: #eefff0;
+}
+table.mental-model-tasks .cost span {
+    font-size: 0.75em;
+}
+table.mental-model-tasks .cost i {
+    vertical-align: text-bottom;
+}
+
+div.mental-model-timeline {
+    border-top: 4px solid teal;
+    display: table;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 8px 32px;
+}
+.mental-model-arrows {
+    width: 504px;
+    font-size: 3em;
+    color: teal;
+    position: absolute;
+    margin-top: -34px;
+    margin-left: -36px;
+}
+.fa-caret-right {
+    float: right;
+}
+
+div.mental-model-timeline-li {
+    display: table-cell;
+    padding: 16px;
+    width: 112px;
+}
+
+#alpaca {
+    float: right;
+    margin: 16px 0 16px 16px;
+}
+#turtle-wrapper {
+    display: grid;
+    grid-template-columns: 30% 10% auto;
+    align-items: center;
+}
+#turtle {
+    /*position: absolute;
+    z-index: -1;*/
+    grid-column: 1 / span 2;
+    grid-row: 1;
+}
+#turtle-text {
+    grid-column: 2 / span 2;
+    grid-row: 1;
+}
+
+.subtitle {
+    margin-top: 8px;
+    font-size: 0.8em;
+    font-style: italic;
+}
+
+.dictionary {
+    border-radius: 8px;
+    border: 1px solid #aaa;
+    padding: 32px;
+    background-color: white;
+    margin: 32px 0;
+}
+.vocab {
+    font-size: 2em;
+    margin-top: 16px;
+}
+.vocab-pronunciation {
+    margin-top: 16px;
+    color: #999;
+}
+
+table.prioritization-matrix td {
+    background-color: white;
+    padding: 32px;
+    width: 50%;
+    vertical-align: top;
+}
+table.prioritization-matrix td ul {
+    padding-left: 24px;
+    margin-top: 8px;
+}
+
+table.prioritization-matrix .manage {
+    font-weight: 600;
+    color: #ffd700;
+}
+table.prioritization-matrix .focus {
+    font-weight: 600;
+    color: #009a00;
+}
+table.prioritization-matrix .red {
+    font-weight: 600;
+    color: #de0000;
+}
